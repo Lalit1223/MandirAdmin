@@ -1,0 +1,120 @@
+
+  .sidebar {
+    min-height: 100%; /* Ensures the background covers the entire content */
+    background-color: #2E3B4E; /* Bootstrap's dark background */
+    overflow-y: auto; /* Enables scrolling if content exceeds sidebar height */
+  }
+  
+  .sidebar .nav-item button {
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 10px;
+    color: rgb(231, 228, 222);
+    text-decoration: none !important; /* Ensure no underline */
+
+  }
+  
+  
+  .sidebar .nav-item button:hover {
+    background-color: #4db8b8;
+    border-radius: 4px;
+  }
+  
+  .sidebar .nav-item button.fw-bold {
+    color: #f5f3eb; /* Highlight active tab with a gold color for visibility */
+  }
+
+  
+  
+  
+  .navbar{
+    background-color: #003366;
+    color:f5f3eb;
+    }/* General Font Sizes */
+.nav-item {
+  font-size: 1.1rem;
+}
+
+.card:hover {
+  border: 2px solid transparent !important;
+  transition: border-color 0.3s ease;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.8)!important;
+  transform: none !important;
+  
+}
+
+
+.card:hover {
+  border-color: #4db8b8;
+}
+
+
+
+/* Sidebar Styles */
+.sidebar {
+  min-height: 100%; /* Ensures the background covers the entire content */
+  background-color: #2E3B4E; /* Dark Slate Gray for sidebar */
+  overflow-y: auto; /* Enables scrolling if content exceeds sidebar height */
+}
+
+.sidebar .nav-item button {
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 10px;
+  color: rgb(231, 228, 222); /* Light Gray text for buttons */
+  text-decoration: none !important; /* Ensure no underline */
+}
+
+.sidebar .nav-item button:hover {
+  background-color: #4db8b8; /* Teal for hover effect */
+  border-radius: 4px; /* Rounded corners on hover */
+  color: #FFFFFF; /* Ensure text remains white on hover */
+}
+
+.sidebar .nav-item button.fw-bold {
+  background-color: #00bfff; /* Deep Sky Blue for active tab */
+  color: #f5f3eb; /* Highlight active tab with gold color for visibility */
+  border-radius: 4px;
+}
+
+/* Navbar Styles */
+.navbar {
+  background-color: #003366; /* Midnight Blue */
+  color: #f5f3eb; /* Light Cream text for navbar */
+}
+
+.navbar .navbar-brand,
+.navbar .navbar-nav .nav-link {
+  color: #FFFFFF; /* White text for links */
+}
+
+.navbar .navbar-nav .nav-link:hover {
+  color: #20b2aa; /* Light Sea Green for hover effect */
+}
+
+
+
+/* Card Effects */
+.card:hover {
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
+}
+
+/* Modal Overlay */
+.modal.fade.show.d-block {
+  background-color: rgba(0, 0, 0, 0.5); /* Dark overlay */
+}
+
+/* Active Button Styling */
+.sidebar .btn:active,
+.sidebar .btn.fw-bold {
+  background-color: #00bfff; /* Deep Sky Blue for active button */
+  color: #FFFFFF; /* White text */
+}
+
+/* Ensure no underline for links globally */
+a {
+  text-decoration: none !important;
+}
