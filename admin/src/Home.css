@@ -12,22 +12,18 @@
 .navbar .navbar-nav .nav-link:hover {
   color: #20b2aa; /* Light Sea Green for hover effect */
 }
-.navbar{
-  background-color: #003366;
-  color:f5f3eb;
-  }
-  .navbar {
-    background-color: #003366;
-    color: #f5f3eb;
-  }
+
+/* Sidebar Styles */
 
 
-  .sidebar {
-    min-height: 100%; /* Ensures the background covers the entire content */
-    background-color: #2E3B4E; /* Bootstrap's dark background */
-    overflow-y: auto; /* Enables scrolling if content exceeds sidebar height */
-    width: 20%;
-  }
+.sidebar {
+  background-color: #00796b  ;
+  color: rgb(231, 228, 222);
+  width: 20%;
+  min-height: 100vh; /* Ensures sidebar spans the entire viewport */
+  overflow-y: auto; /* Scrollable if content exceeds the height */
+  box-sizing: border-box; /* Include padding and borders in width calculation */
+}
   
   .sidebar .nav-item button {
     text-align: left;
@@ -41,74 +37,43 @@
   
   
   .sidebar .nav-item button:hover {
-    background-color: #f3960980;
-    border-radius: 4px;
+    background-color: #f7900a65; /* Teal for hover effect */
+    border-radius: 4px; /* Rounded corners on hover */
+    color: #FFFFFF; /* Ensure text remains white on hover */
   }
   
   .sidebar .nav-item button.fw-bold {
-    color: #f5f3eb; /* Highlight active tab with a gold color for visibility */
+    background-color: #f77206; /* Deep Sky Blue for active tab */
+    color: #f5f3eb; /* Highlight active tab with gold color for visibility */
+    border-radius: 4px;
+  }
+ 
+/* main Styles */
+
+
+  .main {
+    width: calc(100% - 20%); /* Dynamically adjust main content width */
+    box-sizing: border-box;
+    padding: 0;
+    overflow-x: hidden; /* Hide horizontal overflow */
+  
   }
 
-  .main{
-    width: 75%;
-  }
-  
-  
-  /* General Font Sizes */
-.nav-item {
-  font-size: 1.1rem;
+  .container-fluid {
+    padding: 0;
+    overflow-x: hidden; /* Hide horizontal overflow */
 }
+  
+  
+ 
+/* Card Styles */
 
 .card:hover {
   border: 2px solid transparent !important;
-  transition: border-color 0.3s ease;
   box-shadow: 0 0 8px rgba(255, 145, 0, 0.8)!important;
-  transform: none !important;
-  
-}
-
-
-.card:hover {
-  border-color: #4db8b8;
-}
-
-
-
-/* Sidebar Styles */
-.sidebar {
-  min-height: 100%; /* Ensures the background covers the entire content */
-  background-color: #2E3B4E; /* Dark Slate Gray for sidebar */
-  overflow-y: auto; /* Enables scrolling if content exceeds sidebar height */
-}
-
-.sidebar .nav-item button {
-  text-align: left;
-  background: none;
-  border: none;
-  padding: 10px;
-  color: rgb(231, 228, 222); /* Light Gray text for buttons */
-  text-decoration: none !important; /* Ensure no underline */
-}
-
-.sidebar .nav-item button:hover {
-  background-color: #f7900a65; /* Teal for hover effect */
-  border-radius: 4px; /* Rounded corners on hover */
-  color: #FFFFFF; /* Ensure text remains white on hover */
-}
-
-.sidebar .nav-item button.fw-bold {
-  background-color: #f77206; /* Deep Sky Blue for active tab */
-  color: #f5f3eb; /* Highlight active tab with gold color for visibility */
-  border-radius: 4px;
-}
-
-
-
-
-/* Card Effects */
-.card:hover {
   transform: scale(1.05);
   transition: transform 0.3s ease;
+  
 }
 
 /* Modal Overlay */
@@ -116,71 +81,8 @@
   background-color: rgba(0, 0, 0, 0.5); /* Dark overlay */
 }
 
-
-
-/* Ensure no underline for links globally */
-a {
-  text-decoration: none !important;
-}
-
-
-
-
-
-/* Ensure no flex conflicts */
-.container-fluid {
-  padding: 0;
-    overflow-x: hidden; /* Hide horizontal overflow */
-
-  
-}
-
-/* Sidebar Styling */
-.sidebar {
-  background-color: #2E3B4E;
-  color: rgb(231, 228, 222);
-  width: 20%;
-  min-height: 100vh; /* Ensures sidebar spans the entire viewport */
-  overflow-y: auto; /* Scrollable if content exceeds the height */
-  box-sizing: border-box; /* Include padding and borders in width calculation */
-}
-
-.sidebar .nav-item button {
-  text-align: left;
-  background: none;
-  border: none;
-  padding: 10px;
-  color: rgb(231, 228, 222);
-  text-decoration: none !important;
-}
-
-.sidebar .nav-item button:hover {
-  background-color: #f3960980;
-  border-radius: 4px;
-}
-
-.sidebar .nav-item button.fw-bold {
-  background-color: #f77206;
-  color: #f5f3eb;
-  border-radius: 4px;
-}
-
-/* Main Content Styling */
-.main {
-  width: calc(100% - 20%); /* Dynamically adjust main content width */
-  box-sizing: border-box;
-  padding: 0;
-  overflow-x: hidden; /* Hide horizontal overflow */
-
-}
-
-
-
 .rbc-event {
   background-color: #ff6f61;  /* Color for event background */
   color: white;  /* Text color for events */
 }
 
-.rbc-selected {
-  background-color: #feb47b;  /* Highlight color for selected event */
-}
