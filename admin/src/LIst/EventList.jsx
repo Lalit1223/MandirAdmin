@@ -7,7 +7,8 @@ export const eventList = [
     location: "Ayodhya",
   },
   { id: 2, name: "Chhath Puja", date: "2024-11-19", location: "Patna" },
-  { id: 3, name: "Kumbh Mela", date: "2025-01-14", location: "Haridwar" },
+  { id: 3, name: "Maha Aarti", date: "2024-12-10", location: "Haridwar" },
+  { id: 4, name: "Kumbh Mela", date: "2025-01-14", location: "Haridwar" },
 ];
 
 export default function EventList() {

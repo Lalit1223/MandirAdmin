@@ -39,7 +39,20 @@ const Home = () => {
     title: event.name,
     start: new Date(event.date),
     end: new Date(event.date), // Single-day events
+    category: event.category || "default", // Assuming events have a category
   }));
+
+  const getEventColor = (event) => {
+    const categoryColors = {
+      default: "#ff5733", // Red for default category
+      religious: "#33b5ff", // Blue for religious events
+      festival: "#81c784", // Green for festivals
+      workshop: "#ffb74d", // Orange for workshops
+    };
+
+    // Default color if no category is matched
+    return categoryColors[event.category] || categoryColors["default"];
+  };
 
   var EventCount = eventList.length;
   var UserCount = userList.length;
@@ -87,47 +100,92 @@ const Home = () => {
                 icon: "bi bi-house",
               },
             ].map((item, index) => (
-              <div className="col-md-4 mb-3 " key={index}>
+              <div className="col-6 col-sm-4 col-md-3 mb-4" key={index}>
                 <div
-                  className="card border-secondary shadow-sm  text-center"
+                  className="card border-secondary shadow-sm text-center"
                   style={{
-                    borderRadius: "12px",
+                    borderRadius: "8px",
                     background: "linear-gradient(135deg, #ffffff, #f8f9fa)",
+                    padding: "10px", // Reduced padding
+                    height: "auto", // Let the card height adjust based on content
                   }}
                 >
                   <div className="card-body">
                     <i
-                      className={`${item.icon} text-primary mb-3`}
-                      style={{ fontSize: "3rem" }}
+                      className={`${item.icon} text-primary mb-2`}
+                      style={{ fontSize: "2rem" }} // Smaller icon size
                     ></i>
-                    <h5 className="card-title">{item.title}</h5>
-                    <h3 className="text-primary fw-bold">{item.value}</h3>
-                    <p className="text-muted">
+                    <h6 className="card-title">{item.title}</h6>
+                    <h4 className="text-primary fw-bold">{item.value}</h4>
+                    <p className="text-muted" style={{ fontSize: "0.85rem" }}>
                       Details about {item.title.toLowerCase()}.
                     </p>
                   </div>
                 </div>
-                {/* Calendar Card */}
               </div>
             ))}
             {/* Calendar Card */}
-            <div className="col-md-12">
+            <div className="col-12 col-md-6 mb-4">
               <div
                 className="card card-cal border-secondary shadow-sm"
                 style={{
                   borderRadius: "12px",
-                  background: "linear-gradient(135deg, #ffffff, #f8f9fa)",
+                  background: "#f4f6f9", // Light gray background for card
+                  padding: "15px",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Soft shadow for card
                 }}
               >
                 <div className="card-body">
-                  <h5 className="card-title">Event Calendar</h5>
-                  <div style={{ height: "500px" }}>
+                  <div
+                    style={{
+                      height: "300px",
+                      borderRadius: "10px",
+                      overflow: "hidden", // Ensures smooth corners for the calendar
+                      background: "#ffffff", // White background for the calendar
+                      border: "2px solid #ddd", // Border to define calendar edges
+                    }}
+                  >
                     <Calendar
                       localizer={localizer}
                       events={events}
                       startAccessor="start"
                       endAccessor="end"
-                      style={{ height: "100%" }}
+                      style={{
+                        height: "100%",
+                        borderRadius: "10px", // Smooth corners for the calendar itself
+                        fontFamily: "'Arial', sans-serif", // Clean font for readability
+                      }}
+                      components={{
+                        event: ({ event }) => (
+                          <span
+                            style={{
+                              backgroundColor: getEventColor(event),
+                              padding: "5px",
+                              borderRadius: "5px",
+                              color: "#fff",
+                              display: "block",
+                              fontWeight: "bold",
+                              fontSize: "0.9rem",
+                            }}
+                          >
+                            {event.title}
+                          </span>
+                        ),
+                        toolbar: () => (
+                          <div
+                            style={{
+                              background:
+                                "linear-gradient(120deg, #ff5722 ,rgb(236, 186, 128))", // Colorful gradient for header
+                              color: "#fff", // White text color in header
+                              padding: "10px",
+                              textAlign: "center",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            <span>Event Calendar</span>
+                          </div>
+                        ),
+                      }}
                     />
                   </div>
                 </div>

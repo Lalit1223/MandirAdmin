@@ -13,21 +13,16 @@ const Navbar = () => {
           />
           Mandir Management
         </Link>
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
+
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <button className="btn btn-danger btn-sm ms-3">Logout</button>
+              <button
+                className="btn btn-sm me-4"
+                style={{ backgroundColor: "#ff5722", color: "#fff" }}
+              >
+                Logout
+              </button>
             </li>
           </ul>
         </div>

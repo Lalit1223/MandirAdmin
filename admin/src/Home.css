@@ -1,3 +1,26 @@
+/* Navbar Styles */
+.navbar {
+  background:linear-gradient(135deg, #e93802 ,rgb(236, 186, 128));
+  color: #f5f3eb; /* Light Cream text for navbar */
+}
+
+.navbar .navbar-brand,
+.navbar .navbar-nav .nav-link {
+  color: #FFFFFF; /* White text for links */
+}
+
+.navbar .navbar-nav .nav-link:hover {
+  color: #20b2aa; /* Light Sea Green for hover effect */
+}
+.navbar{
+  background-color: #003366;
+  color:f5f3eb;
+  }
+  .navbar {
+    background-color: #003366;
+    color: #f5f3eb;
+  }
+
 
   .sidebar {
     min-height: 100%; /* Ensures the background covers the entire content */
@@ -18,7 +41,7 @@
   
   
   .sidebar .nav-item button:hover {
-    background-color: #4db8b8;
+    background-color: #f3960980;
     border-radius: 4px;
   }
   
@@ -31,10 +54,7 @@
   }
   
   
-  .navbar{
-    background-color: #003366;
-    color:f5f3eb;
-    }/* General Font Sizes */
+  /* General Font Sizes */
 .nav-item {
   font-size: 1.1rem;
 }
@@ -42,7 +62,7 @@
 .card:hover {
   border: 2px solid transparent !important;
   transition: border-color 0.3s ease;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.8)!important;
+  box-shadow: 0 0 8px rgba(255, 145, 0, 0.8)!important;
   transform: none !important;
   
 }
@@ -82,20 +102,6 @@
   border-radius: 4px;
 }
 
-/* Navbar Styles */
-.navbar {
-  background-color: #003366; /* Midnight Blue */
-  color: #f5f3eb; /* Light Cream text for navbar */
-}
-
-.navbar .navbar-brand,
-.navbar .navbar-nav .nav-link {
-  color: #FFFFFF; /* White text for links */
-}
-
-.navbar .navbar-nav .nav-link:hover {
-  color: #20b2aa; /* Light Sea Green for hover effect */
-}
 
 
 
@@ -110,12 +116,7 @@
   background-color: rgba(0, 0, 0, 0.5); /* Dark overlay */
 }
 
-/* Active Button Styling */
-.sidebar .btn:active,
-.sidebar .btn.fw-bold {
-  background-color: #00bfff; /* Deep Sky Blue for active button */
-  color: #FFFFFF; /* White text */
-}
+
 
 /* Ensure no underline for links globally */
 a {
@@ -154,7 +155,7 @@ a {
 }
 
 .sidebar .nav-item button:hover {
-  background-color: #4db8b8;
+  background-color: #f3960980;
   border-radius: 4px;
 }
 
@@ -173,8 +174,13 @@ a {
 
 }
 
-.navbar {
-  background-color: #003366;
-  color: #f5f3eb;
+
+
+.rbc-event {
+  background-color: #ff6f61;  /* Color for event background */
+  color: white;  /* Text color for events */
 }
 
+.rbc-selected {
+  background-color: #feb47b;  /* Highlight color for selected event */
+}
