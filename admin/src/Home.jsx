@@ -6,7 +6,7 @@ import Book from "./CMS/Book";
 import Suvichar from "./CMS/Suvichar";
 import History from "./CMS/History";
 import Navbar from "./Navbar";
-import MandirList, { mandirList } from "./LIst/MandirList";
+import MandirList, { mandirListData } from "/src/List/MandirList.jsx";
 import BookList from "./LIst/BookList";
 import UserList, { userList } from "./LIst/UserList";
 import EventList, { eventList } from "./LIst/EventList";
@@ -56,12 +56,14 @@ const Home = () => {
 
   var EventCount = eventList.length;
   var UserCount = userList.length;
-  var MandirCount = mandirList.length;
+  var MandirCount = mandirListData.length;
 
-  const liveMandirs = mandirList.filter((mandir) => mandir.status === "Live");
+  const liveMandirs = mandirListData.filter(
+    (mandir) => mandir.status === "Live"
+  );
   var liveCount = liveMandirs.length;
 
-  const offlineMandirs = mandirList.filter(
+  const offlineMandirs = mandirListData.filter(
     (mandir) => mandir.status === "Offline"
   );
   var offlineCount = offlineMandirs.length;
@@ -198,26 +200,73 @@ const Home = () => {
         return (
           <div className="row">
             {[
-              "Add Mandir",
-              "Add Event",
-              "Add Book",
-              "Add Suvichar",
-              "Add Indian History",
+              {
+                title: "Add Mandir",
+                icon: "bi bi-building", // Temple icon
+              },
+              {
+                title: "Add Event",
+                icon: "bi bi-calendar-event", // Event icon
+              },
+              {
+                title: "Add Book",
+                icon: "bi bi-book", // Book icon
+              },
+              {
+                title: "Add Suvichar",
+                icon: "bi bi-chat-quote", // Good thoughts icon
+              },
+              {
+                title: "Add Indian History",
+                icon: "bi bi-clock-history", // History icon
+              },
             ].map((item, index) => (
-              <div className="col-md-4 mb-4" key={index}>
-                <div className="card border-secondary">
-                  <div className="card-body">
-                    <h5 className="card-title">{item}</h5>
-                    <p className="card-text">
-                      Manage {item.toLowerCase()} here.
-                    </p>
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => handleOpenModal(item)}
+              <div className="col-6 col-sm-4 col-md-3 mb-4" key={index}>
+                <div
+                  className="card border-secondary shadow-sm text-center"
+                  style={{
+                    borderRadius: "8px",
+                    background: "linear-gradient(135deg, #ffffff, #f8f9fa)",
+                    height: "250px", // Fixed height for uniformity
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between", // Ensures even spacing
+                    padding: "10px",
+                  }}
+                >
+                  <div className="card-body d-flex flex-column align-items-center justify-content-center">
+                    <i
+                      className={`${item.icon} text-primary mb-3`}
+                      style={{ fontSize: "2rem" }}
+                    ></i>
+                    <h6 className="card-title mb-2">{item.title}</h6>
+                    <p
+                      className="text-muted mb-3"
+                      style={{ fontSize: "0.85rem", lineHeight: "1.2" }}
                     >
-                      Add {item}
-                    </button>
+                      Manage {item.title.toLowerCase()} here.
+                    </p>
                   </div>
+                  <button
+                    className="btn btn-sm"
+                    style={{
+                      backgroundColor: "#ff5722",
+                      color: "#fff",
+                      fontWeight: "bold",
+                      borderRadius: "5px",
+                      padding: "8px 16px",
+                      transition: "all 0.3s ease",
+                    }}
+                    onClick={() => handleOpenModal(item.title)}
+                    onMouseOver={(e) =>
+                      (e.target.style.backgroundColor = "#e64a19")
+                    }
+                    onMouseOut={(e) =>
+                      (e.target.style.backgroundColor = "#ff5722")
+                    }
+                  >
+                    Add {item.title}
+                  </button>
                 </div>
               </div>
             ))}
