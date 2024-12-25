@@ -3,6 +3,7 @@
     min-height: 100%; /* Ensures the background covers the entire content */
     background-color: #2E3B4E; /* Bootstrap's dark background */
     overflow-y: auto; /* Enables scrolling if content exceeds sidebar height */
+    width: 20%;
   }
   
   .sidebar .nav-item button {
@@ -25,7 +26,9 @@
     color: #f5f3eb; /* Highlight active tab with a gold color for visibility */
   }
 
-  
+  .main{
+    width: 75%;
+  }
   
   
   .navbar{
@@ -68,13 +71,13 @@
 }
 
 .sidebar .nav-item button:hover {
-  background-color: #4db8b8; /* Teal for hover effect */
+  background-color: #f7900a65; /* Teal for hover effect */
   border-radius: 4px; /* Rounded corners on hover */
   color: #FFFFFF; /* Ensure text remains white on hover */
 }
 
 .sidebar .nav-item button.fw-bold {
-  background-color: #00bfff; /* Deep Sky Blue for active tab */
+  background-color: #f77206; /* Deep Sky Blue for active tab */
   color: #f5f3eb; /* Highlight active tab with gold color for visibility */
   border-radius: 4px;
 }
@@ -118,3 +121,60 @@
 a {
   text-decoration: none !important;
 }
+
+
+
+
+
+/* Ensure no flex conflicts */
+.container-fluid {
+  padding: 0;
+    overflow-x: hidden; /* Hide horizontal overflow */
+
+  
+}
+
+/* Sidebar Styling */
+.sidebar {
+  background-color: #2E3B4E;
+  color: rgb(231, 228, 222);
+  width: 20%;
+  min-height: 100vh; /* Ensures sidebar spans the entire viewport */
+  overflow-y: auto; /* Scrollable if content exceeds the height */
+  box-sizing: border-box; /* Include padding and borders in width calculation */
+}
+
+.sidebar .nav-item button {
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 10px;
+  color: rgb(231, 228, 222);
+  text-decoration: none !important;
+}
+
+.sidebar .nav-item button:hover {
+  background-color: #4db8b8;
+  border-radius: 4px;
+}
+
+.sidebar .nav-item button.fw-bold {
+  background-color: #f77206;
+  color: #f5f3eb;
+  border-radius: 4px;
+}
+
+/* Main Content Styling */
+.main {
+  width: calc(100% - 20%); /* Dynamically adjust main content width */
+  box-sizing: border-box;
+  padding: 0;
+  overflow-x: hidden; /* Hide horizontal overflow */
+
+}
+
+.navbar {
+  background-color: #003366;
+  color: #f5f3eb;
+}
+

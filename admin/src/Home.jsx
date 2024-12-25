@@ -87,9 +87,9 @@ const Home = () => {
                 icon: "bi bi-house",
               },
             ].map((item, index) => (
-              <div className="col-md-4 mb-4" key={index}>
+              <div className="col-md-4 mb-3 " key={index}>
                 <div
-                  className="card border-secondary shadow-sm h-100 text-center"
+                  className="card border-secondary shadow-sm  text-center"
                   style={{
                     borderRadius: "12px",
                     background: "linear-gradient(135deg, #ffffff, #f8f9fa)",
@@ -200,133 +200,134 @@ const Home = () => {
   };
 
   return (
-    <div className="container-fluid">
-      <div className="row">
-        <Navbar />
-        <div className="col-md-3 col-lg-2 text-white  p-3 sidebar">
-          <ul className="nav flex-column">
-            <li className="nav-item mb-3">
-              <button
-                className={`btn btn-link text-start  w-100 ${
-                  activeTab === "dashboard" ? "fw-bold  rounded" : ""
-                }`}
-                onClick={() => handleTabChange("dashboard")}
-              >
-                <i className="bi bi-speedometer2 me-2"></i> Dashboard
-              </button>
-            </li>
-            <li className="nav-item mb-3">
-              <button
-                className={`btn btn-link text-start  w-100 ${
-                  activeTab === "cms" ? "fw-bold  rounded" : ""
-                }`}
-                onClick={() => handleTabChange("cms")}
-              >
-                <i className="bi bi-layout-text-sidebar me-2"></i> CMS
-              </button>
-            </li>
-            <li className="nav-item mb-3">
-              <button
-                className={`btn btn-link text-start  w-100 ${
-                  activeTab === "mandirList" ? "fw-bold  rounded" : ""
-                }`}
-                onClick={() => handleTabChange("mandirList")}
-              >
-                <i className="bi bi-list-ul me-2"></i> Mandir List
-              </button>
-            </li>
-            <li className="nav-item mb-3">
-              <button
-                className={`btn btn-link text-start  w-100 ${
-                  activeTab === "userList" ? "fw-bold  rounded" : ""
-                }`}
-                onClick={() => handleTabChange("userList")}
-              >
-                <i className="bi bi-people me-2"></i> User List
-              </button>
-            </li>
-            <li className="nav-item mb-3">
-              <button
-                className={`btn btn-link text-start  w-100 ${
-                  activeTab === "eventList" ? "fw-bold  rounded" : ""
-                }`}
-                onClick={() => handleTabChange("eventList")}
-              >
-                <i className="bi bi-calendar-event me-2"></i> Event List
-              </button>
-            </li>
-            <li className="nav-item mb-3">
-              <button
-                className={`btn btn-link text-start  w-100 ${
-                  activeTab === "bookList" ? "fw-bold  rounded" : ""
-                }`}
-                onClick={() => handleTabChange("bookList")}
-              >
-                <i className="bi bi-book me-2"></i> Book List
-              </button>
-            </li>
-            <li className="nav-item mb-3">
-              <button
-                className={`btn btn-link text-start  w-100 ${
-                  activeTab === "offlineMandir" ? "fw-bold  rounded" : ""
-                }`}
-                onClick={() => handleTabChange("offlineMandir")}
-              >
-                <i className="bi bi-building me-2"></i> Offline Mandir
-              </button>
-            </li>
-            <li className="nav-item mb-3">
-              <button
-                className={`btn btn-link text-start  w-100 ${
-                  activeTab === "userManagement" ? "fw-bold  rounded" : ""
-                }`}
-                onClick={() => handleTabChange("userManagement")}
-              >
-                <i className="bi bi-person-circle me-2"></i> User Management
-              </button>
-            </li>
-            <li className="nav-item mb-3">
-              <button className="btn btn-link text-start  w-100">
-                <i className="bi bi-box-arrow-right me-2"></i> Logout
-              </button>
-            </li>
-          </ul>
+    <div>
+      <Navbar />
+      <div className="container-fluid ">
+        <div className="row">
+          <div className="col-lg-2 text-white  p-3 sidebar">
+            <ul className="nav flex-column">
+              <li className="nav-item mb-3">
+                <button
+                  className={`btn btn-link text-start  w-100 ${
+                    activeTab === "dashboard" ? "fw-bold  rounded" : ""
+                  }`}
+                  onClick={() => handleTabChange("dashboard")}
+                >
+                  <i className="bi bi-speedometer2 me-2"></i> Dashboard
+                </button>
+              </li>
+              <li className="nav-item mb-3">
+                <button
+                  className={`btn btn-link text-start  w-100 ${
+                    activeTab === "cms" ? "fw-bold  rounded" : ""
+                  }`}
+                  onClick={() => handleTabChange("cms")}
+                >
+                  <i className="bi bi-layout-text-sidebar me-2"></i> CMS
+                </button>
+              </li>
+              <li className="nav-item mb-3">
+                <button
+                  className={`btn btn-link text-start  w-100 ${
+                    activeTab === "mandirList" ? "fw-bold  rounded" : ""
+                  }`}
+                  onClick={() => handleTabChange("mandirList")}
+                >
+                  <i className="bi bi-list-ul me-2"></i> Mandir List
+                </button>
+              </li>
+              <li className="nav-item mb-3">
+                <button
+                  className={`btn btn-link text-start  w-100 ${
+                    activeTab === "userList" ? "fw-bold  rounded" : ""
+                  }`}
+                  onClick={() => handleTabChange("userList")}
+                >
+                  <i className="bi bi-people me-2"></i> User List
+                </button>
+              </li>
+              <li className="nav-item mb-3">
+                <button
+                  className={`btn btn-link text-start  w-100 ${
+                    activeTab === "eventList" ? "fw-bold  rounded" : ""
+                  }`}
+                  onClick={() => handleTabChange("eventList")}
+                >
+                  <i className="bi bi-calendar-event me-2"></i> Event List
+                </button>
+              </li>
+              <li className="nav-item mb-3">
+                <button
+                  className={`btn btn-link text-start  w-100 ${
+                    activeTab === "bookList" ? "fw-bold  rounded" : ""
+                  }`}
+                  onClick={() => handleTabChange("bookList")}
+                >
+                  <i className="bi bi-book me-2"></i> Book List
+                </button>
+              </li>
+              <li className="nav-item mb-3">
+                <button
+                  className={`btn btn-link text-start  w-100 ${
+                    activeTab === "offlineMandir" ? "fw-bold  rounded" : ""
+                  }`}
+                  onClick={() => handleTabChange("offlineMandir")}
+                >
+                  <i className="bi bi-building me-2"></i> Offline Mandir
+                </button>
+              </li>
+              <li className="nav-item mb-3">
+                <button
+                  className={`btn btn-link text-start  w-100 ${
+                    activeTab === "userManagement" ? "fw-bold  rounded" : ""
+                  }`}
+                  onClick={() => handleTabChange("userManagement")}
+                >
+                  <i className="bi bi-person-circle me-2"></i> User Management
+                </button>
+              </li>
+              <li className="nav-item mb-3">
+                <button className="btn btn-link text-start  w-100">
+                  <i className="bi bi-box-arrow-right me-2"></i> Logout
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <div className=" col-lg-10 p-4 main">{renderContent()}</div>
         </div>
 
-        {/* Main Content */}
-        <div className="col-md-9 col-lg-10 p-4">{renderContent()}</div>
-      </div>
-
-      {/* Modal for Adding Event or Other CMS Options */}
-      {showModal && (
-        <div
-          className="modal fade show d-block"
-          style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
-        >
-          <div className="modal-dialog modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">{currentModal}</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={handleCloseModal}
-                ></button>
-              </div>
-              <div className="modal-body">{renderModalContent()}</div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleCloseModal}
-                >
-                  Close
-                </button>
+        {/* Modal for Adding Event or Other CMS Options */}
+        {showModal && (
+          <div
+            className="modal fade show d-block"
+            style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+          >
+            <div className="modal-dialog modal-lg">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">{currentModal}</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={handleCloseModal}
+                  ></button>
+                </div>
+                <div className="modal-body">{renderModalContent()}</div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={handleCloseModal}
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
