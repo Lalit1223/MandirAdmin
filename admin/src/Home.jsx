@@ -79,27 +79,27 @@ const Home = () => {
               {
                 title: "Total Users",
                 value: `${UserCount}`,
-                icon: "bi bi-people",
+                icon: "bi bi-people icon",
               },
               {
                 title: "Total Temples",
                 value: `${MandirCount}`,
-                icon: "bi bi-building",
+                icon: "bi bi-building icon",
               },
               {
                 title: "Total Events",
                 value: `${EventCount}`,
-                icon: "bi bi-calendar-event",
+                icon: "bi bi-calendar-event icon",
               },
               {
                 title: "Live Mandir",
                 value: `${liveCount}`,
-                icon: "bi bi-broadcast",
+                icon: "bi bi-broadcast icon",
               },
               {
                 title: "Offline Mandir",
                 value: `${offlineCount}`,
-                icon: "bi bi-house",
+                icon: "bi bi-house icon",
               },
             ].map((item, index) => (
               <div className="col-6 col-sm-4 col-md-3 mb-4" key={index}>
@@ -320,7 +320,12 @@ const Home = () => {
                   }`}
                   onClick={() => handleTabChange("dashboard")}
                 >
-                  <i className="bi bi-speedometer2 me-2"></i> Dashboard
+                  <i
+                    className={`bi bi-speedometer2 me-2 ${
+                      activeTab === "dashboard" ? "text-white" : "icon"
+                    }`}
+                  ></i>
+                  Dashboard
                 </button>
               </li>
               <li className="nav-item mb-3">
@@ -330,7 +335,12 @@ const Home = () => {
                   }`}
                   onClick={() => handleTabChange("cms")}
                 >
-                  <i className="bi bi-layout-text-sidebar me-2"></i> CMS
+                  <i
+                    className={`bi icon bi-layout-text-sidebar me-2 ${
+                      activeTab === "cms" ? "text-white" : "icon"
+                    }`}
+                  ></i>
+                  CMS
                 </button>
               </li>
               <li className="nav-item mb-3">
@@ -340,7 +350,7 @@ const Home = () => {
                   }`}
                   onClick={() => handleTabChange("mandirList")}
                 >
-                  <i className="bi bi-list-ul me-2"></i> Mandir List
+                  <i className="bi icon bi-list-ul me-2"></i> Mandir List
                 </button>
               </li>
               <li className="nav-item mb-3">
@@ -350,7 +360,7 @@ const Home = () => {
                   }`}
                   onClick={() => handleTabChange("userList")}
                 >
-                  <i className="bi bi-people me-2"></i> User List
+                  <i className="bi icon bi-people me-2"></i> User List
                 </button>
               </li>
               <li className="nav-item mb-3">
@@ -360,7 +370,7 @@ const Home = () => {
                   }`}
                   onClick={() => handleTabChange("eventList")}
                 >
-                  <i className="bi bi-calendar-event me-2"></i> Event List
+                  <i className="bi icon bi-calendar-event me-2"></i> Event List
                 </button>
               </li>
               <li className="nav-item mb-3">
@@ -370,7 +380,7 @@ const Home = () => {
                   }`}
                   onClick={() => handleTabChange("bookList")}
                 >
-                  <i className="bi bi-book me-2"></i> Book List
+                  <i className="bi icon bi-book me-2"></i> Book List
                 </button>
               </li>
               <li className="nav-item mb-3">
@@ -380,7 +390,7 @@ const Home = () => {
                   }`}
                   onClick={() => handleTabChange("offlineMandir")}
                 >
-                  <i className="bi bi-building me-2"></i> Offline Mandir
+                  <i className="bi icon bi-building me-2"></i> Offline Mandir
                 </button>
               </li>
               <li className="nav-item mb-3">
@@ -390,12 +400,13 @@ const Home = () => {
                   }`}
                   onClick={() => handleTabChange("userManagement")}
                 >
-                  <i className="bi bi-person-circle me-2"></i> User Management
+                  <i className="bi icon bi-person-circle me-2"></i> User
+                  Management
                 </button>
               </li>
               <li className="nav-item mb-3">
                 <button className="btn btn-link text-start  w-100">
-                  <i className="bi bi-box-arrow-right me-2"></i> Logout
+                  <i className="bi icon bi-box-arrow-right me-2"></i> Logout
                 </button>
               </li>
             </ul>
@@ -405,26 +416,54 @@ const Home = () => {
         </div>
 
         {/* Modal for Adding Event or Other CMS Options */}
+        {/* Modal for Adding Event or Other CMS Options */}
         {showModal && (
           <div
             className="modal fade show d-block"
             style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
           >
-            <div className="modal-dialog modal-lg">
+            <div className="modal-dialog modal-md">
+              {" "}
+              {/* Changed from modal-lg to modal-md */}
               <div className="modal-content">
-                <div className="modal-header">
+                <div
+                  className="modal-header"
+                  style={{
+                    backgroundColor: "#ff5722", // Primary theme color
+                    color: "#ffffff", // Text color for contrast
+                  }}
+                >
                   <h5 className="modal-title">{currentModal}</h5>
                   <button
                     type="button"
                     className="btn-close"
+                    style={{ backgroundColor: "#ffffff", color: "#ff5722" }} // Contrast close button
                     onClick={handleCloseModal}
                   ></button>
                 </div>
-                <div className="modal-body">{renderModalContent()}</div>
-                <div className="modal-footer">
+                <div
+                  className="modal-body"
+                  style={{
+                    backgroundColor: "#fef3eb", // Complementary light color for body
+                    color: "#333333", // Neutral text color
+                  }}
+                >
+                  {renderModalContent()}
+                </div>
+                <div
+                  className="modal-footer"
+                  style={{
+                    backgroundColor: "#fef3eb", // Match modal body
+                    borderTop: "1px solid #ff5722", // Optional separator
+                  }}
+                >
                   <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="btn"
+                    style={{
+                      backgroundColor: "#ff5722", // Primary theme color
+                      color: "#ffffff", // White text for contrast
+                    }}
                     onClick={handleCloseModal}
                   >
                     Close

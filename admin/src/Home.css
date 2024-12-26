@@ -1,3 +1,10 @@
+.icon{ 
+   color: #f77206 ; /* Force color to apply */
+}
+
+
+
+
 /* Navbar Styles */
 .navbar {
   background:linear-gradient(135deg, #e93802 ,rgb(236, 186, 128));

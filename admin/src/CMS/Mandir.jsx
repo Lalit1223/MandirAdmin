@@ -6,11 +6,10 @@ import "animate.css/animate.min.css"; // For animations
 const Mandir = () => {
   const navigate = useNavigate();
 
-  // State for form fields
   const [title, setTitle] = useState("");
   const [nickname, setNickname] = useState("");
   const [description, setDescription] = useState("");
-  const [images, setImages] = useState([]); // Multiple images
+  const [images, setImages] = useState([]);
   const [youtubeLink, setYoutubeLink] = useState("");
   const [offlineVideos, setOfflineVideos] = useState({
     morning: "",
@@ -26,7 +25,6 @@ const Mandir = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const formData = new FormData();
     formData.append("title", title);
     formData.append("nickname", nickname);
@@ -41,20 +39,11 @@ const Mandir = () => {
     formData.append("aartiTimesNight", aartiTimes.night);
     formData.append("mapLink", mapLink);
 
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}: ${value}`);
-    }
-
     try {
-      // await axios.post("/api/mandir", formData, {
-      //   headers: {
-      //     "Content-Type": "multipart/form-data",
-      //   },
-      // });
-
+      await axios.post("/api/mandir", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       alert("Mandir added successfully!");
-
-      // Reset form fields
       setTitle("");
       setNickname("");
       setDescription("");
@@ -63,8 +52,6 @@ const Mandir = () => {
       setOfflineVideos({ morning: "", evening: "", night: "" });
       setAartiTimes({ morning: "", evening: "", night: "" });
       setMapLink("");
-
-      // Navigate to the mandir list page
       navigate("/mandir");
     } catch (error) {
       console.error("Error adding mandir:", error);
@@ -72,11 +59,30 @@ const Mandir = () => {
   };
 
   return (
-    <div className="container mt-5 animate__animated animate__fadeIn">
-      <h2 className="text-center mb-4">Add New Mandir</h2>
-      <form onSubmit={handleSubmit} className="shadow p-4 rounded bg-light">
+    <div
+      className="modal-wrapper animate__animated animate__fadeIn"
+      style={{
+        maxWidth: "600px",
+        margin: "auto",
+        padding: "20px",
+        backgroundColor: "#f5f5f5",
+        borderRadius: "10px",
+        boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+      }}
+    >
+      <h2
+        className="text-center"
+        style={{ color: "#333", marginBottom: "20px" }}
+      >
+        Add New Mandir
+      </h2>
+      <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label htmlFor="title" className="form-label">
+          <label
+            htmlFor="title"
+            className="form-label"
+            style={{ fontWeight: "bold" }}
+          >
             Title
           </label>
           <input
@@ -91,7 +97,11 @@ const Mandir = () => {
         </div>
 
         <div className="mb-3">
-          <label htmlFor="nickname" className="form-label">
+          <label
+            htmlFor="nickname"
+            className="form-label"
+            style={{ fontWeight: "bold" }}
+          >
             Nickname
           </label>
           <input
@@ -105,13 +115,16 @@ const Mandir = () => {
         </div>
 
         <div className="mb-3">
-          <label htmlFor="description" className="form-label">
-            Description (100 words max)
+          <label
+            htmlFor="description"
+            className="form-label"
+            style={{ fontWeight: "bold" }}
+          >
+            Description
           </label>
           <textarea
             className="form-control"
             id="description"
-            placeholder="Enter description"
             maxLength="100"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -120,35 +133,43 @@ const Mandir = () => {
         </div>
 
         <div className="mb-3">
-          <label htmlFor="images" className="form-label">
+          <label
+            htmlFor="images"
+            className="form-label"
+            style={{ fontWeight: "bold" }}
+          >
             Images (Max 5)
           </label>
           <input
             type="file"
-            accept="image/*"
-            multiple
             className="form-control"
+            multiple
             id="images"
             onChange={(e) => setImages([...e.target.files])}
           />
         </div>
 
         <div className="mb-3">
-          <label htmlFor="youtubeLink" className="form-label">
+          <label
+            htmlFor="youtubeLink"
+            className="form-label"
+            style={{ fontWeight: "bold" }}
+          >
             YouTube Live Link
           </label>
           <input
             type="url"
             className="form-control"
             id="youtubeLink"
-            placeholder="Enter YouTube live link"
             value={youtubeLink}
             onChange={(e) => setYoutubeLink(e.target.value)}
           />
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Offline Video Links</label>
+          <label className="form-label" style={{ fontWeight: "bold" }}>
+            Offline Video Links
+          </label>
           <input
             type="url"
             className="form-control mb-2"
@@ -179,7 +200,9 @@ const Mandir = () => {
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Aarti Times</label>
+          <label className="form-label" style={{ fontWeight: "bold" }}>
+            Aarti Times
+          </label>
           <input
             type="time"
             className="form-control mb-2"
@@ -210,20 +233,34 @@ const Mandir = () => {
         </div>
 
         <div className="mb-3">
-          <label htmlFor="mapLink" className="form-label">
+          <label
+            htmlFor="mapLink"
+            className="form-label"
+            style={{ fontWeight: "bold" }}
+          >
             Map Link
           </label>
           <input
             type="url"
             className="form-control"
             id="mapLink"
-            placeholder="Enter map link"
             value={mapLink}
             onChange={(e) => setMapLink(e.target.value)}
           />
         </div>
 
-        <button type="submit" className="btn btn-primary w-100">
+        <button
+          type="submit"
+          className="btn btn-primary w-100"
+          style={{
+            backgroundColor: "#007bff",
+            color: "#fff",
+            border: "none",
+            padding: "10px",
+            borderRadius: "5px",
+            fontWeight: "bold",
+          }}
+        >
           Add Mandir
         </button>
       </form>
