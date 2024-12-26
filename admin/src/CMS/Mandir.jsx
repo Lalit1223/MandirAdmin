@@ -6,48 +6,68 @@ import "animate.css/animate.min.css"; // For animations
 const Mandir = () => {
   const navigate = useNavigate();
 
-  const [mandirName, setMandirName] = useState("");
-  const [location, setLocation] = useState("");
+  // State for form fields
+  const [title, setTitle] = useState("");
+  const [nickname, setNickname] = useState("");
   const [description, setDescription] = useState("");
-  const [establishedYear, setEstablishedYear] = useState("");
-  const [mandirImage, setMandirImage] = useState(null);
+  const [images, setImages] = useState([]); // Multiple images
+  const [youtubeLink, setYoutubeLink] = useState("");
+  const [offlineVideos, setOfflineVideos] = useState({
+    morning: "",
+    evening: "",
+    night: "",
+  });
+  const [aartiTimes, setAartiTimes] = useState({
+    morning: "",
+    evening: "",
+    night: "",
+  });
+  const [mapLink, setMapLink] = useState("");
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
 
     const formData = new FormData();
-    formData.append("mandirName", mandirName);
-    formData.append("location", location);
+    formData.append("title", title);
+    formData.append("nickname", nickname);
     formData.append("description", description);
-    formData.append("establishedYear", establishedYear);
-    if (mandirImage) formData.append("mandirImage", mandirImage);
+    images.forEach((image) => formData.append("images", image));
+    formData.append("youtubeLink", youtubeLink);
+    formData.append("offlineVideosMorning", offlineVideos.morning);
+    formData.append("offlineVideosEvening", offlineVideos.evening);
+    formData.append("offlineVideosNight", offlineVideos.night);
+    formData.append("aartiTimesMorning", aartiTimes.morning);
+    formData.append("aartiTimesEvening", aartiTimes.evening);
+    formData.append("aartiTimesNight", aartiTimes.night);
+    formData.append("mapLink", mapLink);
 
-    // Debugging: Log FormData to console
     for (let [key, value] of formData.entries()) {
       console.log(`${key}: ${value}`);
     }
 
     try {
-      // Replace the following with your actual backend API endpoint
-      //   const response = await axios.post("/api/mandir", formData, {
-      //     headers: {
-      //       "Content-Type": "multipart/form-data",
-      //     },
-      //   });
+      // await axios.post("/api/mandir", formData, {
+      //   headers: {
+      //     "Content-Type": "multipart/form-data",
+      //   },
+      // });
 
       alert("Mandir added successfully!");
 
       // Reset form fields
-      setMandirName("");
-      setLocation("");
+      setTitle("");
+      setNickname("");
       setDescription("");
-      setEstablishedYear("");
-      setMandirImage(null);
+      setImages([]);
+      setYoutubeLink("");
+      setOfflineVideos({ morning: "", evening: "", night: "" });
+      setAartiTimes({ morning: "", evening: "", night: "" });
+      setMapLink("");
 
       // Navigate to the mandir list page
       navigate("/mandir");
     } catch (error) {
-      console.error("Error adding mandir:", error); // No use of undefined response here
+      console.error("Error adding mandir:", error);
     }
   };
 
@@ -56,43 +76,43 @@ const Mandir = () => {
       <h2 className="text-center mb-4">Add New Mandir</h2>
       <form onSubmit={handleSubmit} className="shadow p-4 rounded bg-light">
         <div className="mb-3">
-          <label htmlFor="mandirName" className="form-label">
-            Mandir Name
+          <label htmlFor="title" className="form-label">
+            Title
           </label>
           <input
             type="text"
             className="form-control"
-            id="mandirName"
-            placeholder="Enter mandir name"
-            value={mandirName}
-            onChange={(e) => setMandirName(e.target.value)}
+            id="title"
+            placeholder="Enter title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             required
           />
         </div>
 
         <div className="mb-3">
-          <label htmlFor="location" className="form-label">
-            Location
+          <label htmlFor="nickname" className="form-label">
+            Nickname
           </label>
           <input
             type="text"
             className="form-control"
-            id="location"
-            placeholder="Enter location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            required
+            id="nickname"
+            placeholder="Enter nickname"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
           />
         </div>
 
         <div className="mb-3">
           <label htmlFor="description" className="form-label">
-            Description
+            Description (100 words max)
           </label>
           <textarea
             className="form-control"
             id="description"
-            placeholder="Enter mandir description"
+            placeholder="Enter description"
+            maxLength="100"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
@@ -100,30 +120,106 @@ const Mandir = () => {
         </div>
 
         <div className="mb-3">
-          <label htmlFor="establishedYear" className="form-label">
-            Established Year
-          </label>
-          <input
-            type="number"
-            className="form-control"
-            id="establishedYear"
-            placeholder="Enter established year"
-            value={establishedYear}
-            onChange={(e) => setEstablishedYear(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="mb-3">
-          <label htmlFor="mandirImage" className="form-label">
-            Mandir Image
+          <label htmlFor="images" className="form-label">
+            Images (Max 5)
           </label>
           <input
             type="file"
             accept="image/*"
+            multiple
             className="form-control"
-            id="mandirImage"
-            onChange={(e) => setMandirImage(e.target.files[0])}
+            id="images"
+            onChange={(e) => setImages([...e.target.files])}
+          />
+        </div>
+
+        <div className="mb-3">
+          <label htmlFor="youtubeLink" className="form-label">
+            YouTube Live Link
+          </label>
+          <input
+            type="url"
+            className="form-control"
+            id="youtubeLink"
+            placeholder="Enter YouTube live link"
+            value={youtubeLink}
+            onChange={(e) => setYoutubeLink(e.target.value)}
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Offline Video Links</label>
+          <input
+            type="url"
+            className="form-control mb-2"
+            placeholder="Morning Aarti Video"
+            value={offlineVideos.morning}
+            onChange={(e) =>
+              setOfflineVideos({ ...offlineVideos, morning: e.target.value })
+            }
+          />
+          <input
+            type="url"
+            className="form-control mb-2"
+            placeholder="Evening Aarti Video"
+            value={offlineVideos.evening}
+            onChange={(e) =>
+              setOfflineVideos({ ...offlineVideos, evening: e.target.value })
+            }
+          />
+          <input
+            type="url"
+            className="form-control"
+            placeholder="Night Aarti Video"
+            value={offlineVideos.night}
+            onChange={(e) =>
+              setOfflineVideos({ ...offlineVideos, night: e.target.value })
+            }
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Aarti Times</label>
+          <input
+            type="time"
+            className="form-control mb-2"
+            placeholder="Morning Aarti Time"
+            value={aartiTimes.morning}
+            onChange={(e) =>
+              setAartiTimes({ ...aartiTimes, morning: e.target.value })
+            }
+          />
+          <input
+            type="time"
+            className="form-control mb-2"
+            placeholder="Evening Aarti Time"
+            value={aartiTimes.evening}
+            onChange={(e) =>
+              setAartiTimes({ ...aartiTimes, evening: e.target.value })
+            }
+          />
+          <input
+            type="time"
+            className="form-control"
+            placeholder="Night Aarti Time"
+            value={aartiTimes.night}
+            onChange={(e) =>
+              setAartiTimes({ ...aartiTimes, night: e.target.value })
+            }
+          />
+        </div>
+
+        <div className="mb-3">
+          <label htmlFor="mapLink" className="form-label">
+            Map Link
+          </label>
+          <input
+            type="url"
+            className="form-control"
+            id="mapLink"
+            placeholder="Enter map link"
+            value={mapLink}
+            onChange={(e) => setMapLink(e.target.value)}
           />
         </div>
 
