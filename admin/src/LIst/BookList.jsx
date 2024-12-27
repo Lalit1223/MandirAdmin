@@ -12,7 +12,7 @@ const initialBookList = [
 const BookList = () => {
   const [books, setBooks] = useState(initialBookList); // Manage book list
   const [searchTerm, setSearchTerm] = useState(""); // Search functionality
-  const [sortAscending, setSortAscending] = useState(true); // Sort toggle
+  const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
   const itemsPerPage = 4; // Number of items per page
 
@@ -22,12 +22,15 @@ const BookList = () => {
   };
 
   // Sort books by ID
+
+  // Sort functionality
   const handleSort = () => {
-    const sortedBooks = [...books].sort((a, b) =>
-      sortAscending ? a.id - b.id : b.id - a.id
+    const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
+    const sortedList = [...books].sort((a, b) =>
+      newSortOrder === "asc" ? a.id - b.id : b.id - a.id
     );
-    setBooks(sortedBooks);
-    setSortAscending(!sortAscending);
+    setBooks(sortedList);
+    setSortOrder(newSortOrder); // Update the sort order state
   };
 
   // Filter books based on search term
@@ -87,7 +90,12 @@ const BookList = () => {
           >
             <tr>
               <th onClick={handleSort} style={{ cursor: "pointer" }}>
-                ID {sortAscending ? "↑" : "↓"}
+                ID{" "}
+                <i
+                  className={`bi ${
+                    sortOrder === "asc" ? "bi-arrow-up" : "bi-arrow-down"
+                  }`}
+                ></i>
               </th>
               <th>Title</th>
               <th>Author</th>

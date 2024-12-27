@@ -18,7 +18,7 @@ export const eventList = [
 const EventList = () => {
   const [events, setEvents] = useState(eventList); // Manage event list
   const [searchTerm, setSearchTerm] = useState(""); // Search functionality
-  const [sortAscending, setSortAscending] = useState(true); // Sort toggle
+  const [sortOrder, setSortOrder] = useState(true); // Sort toggle
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
   const itemsPerPage = 4; // Number of items per page
 
@@ -29,11 +29,12 @@ const EventList = () => {
 
   // Sort events by ID
   const handleSort = () => {
-    const sortedEvents = [...events].sort((a, b) =>
-      sortAscending ? a.id - b.id : b.id - a.id
+    const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
+    const sortedList = [...events].sort((a, b) =>
+      newSortOrder === "asc" ? a.id - b.id : b.id - a.id
     );
-    setEvents(sortedEvents);
-    setSortAscending(!sortAscending);
+    setEvents(sortedList);
+    setSortOrder(newSortOrder); // Update the sort order state
   };
 
   // Filter events based on search term
@@ -93,7 +94,7 @@ const EventList = () => {
           >
             <tr>
               <th onClick={handleSort} style={{ cursor: "pointer" }}>
-                ID {sortAscending ? "↑" : "↓"}
+                ID {sortOrder === "asc" ? "↑" : "↓"}
               </th>
               <th>Event Name</th>
               <th>Date</th>

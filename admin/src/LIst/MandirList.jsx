@@ -30,7 +30,7 @@ const MandirList = () => {
   const [mandirList, setMandirList] = useState(mandirListData);
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 4;
 
   // Search functionality
   const handleSearch = (event) => {
@@ -39,11 +39,12 @@ const MandirList = () => {
 
   // Sort functionality
   const handleSort = () => {
+    const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
     const sortedList = [...mandirList].sort((a, b) =>
-      sortOrder === "asc" ? a.id - b.id : b.id - a.id
+      newSortOrder === "asc" ? a.id - b.id : b.id - a.id
     );
     setMandirList(sortedList);
-    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    setSortOrder(newSortOrder); // Update the sort order state
   };
 
   // Delete functionality
@@ -106,12 +107,7 @@ const MandirList = () => {
           >
             <tr>
               <th onClick={handleSort} style={{ cursor: "pointer" }}>
-                #{" "}
-                <i
-                  className={`bi ${
-                    sortOrder === "asc" ? "bi-arrow-up" : "bi-arrow-down"
-                  }`}
-                ></i>
+                # {sortOrder === "asc" ? "↑" : "↓"}
               </th>
               <th>Name</th>
               <th>Location</th>
