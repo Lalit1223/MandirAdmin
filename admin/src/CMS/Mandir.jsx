@@ -253,7 +253,7 @@ const Mandir = () => {
           type="submit"
           className="btn btn-primary w-100"
           style={{
-            backgroundColor: "#007bff",
+            backgroundColor: "#ff5722",
             color: "#fff",
             border: "none",
             padding: "10px",

@@ -1,34 +1,26 @@
 import React, { useState } from "react";
 
 export const mandirListData = [
-  {
-    id: 1,
-    name: "Shri Ram Mandir",
-    location: "Ayodhya",
-    status: "Live",
-  },
+  { id: 1, name: "Shri Ram Mandir", location: "Ayodhya", status: "Live" },
   {
     id: 2,
     name: "Kashi Vishwanath Temple",
     location: "Varanasi",
     status: "Live",
   },
-  {
-    id: 3,
-    name: "Jagannath Temple",
-    location: "Puri",
-    status: "Offline",
-  },
+  { id: 3, name: "Jagannath Temple", location: "Puri", status: "Offline" },
   {
     id: 4,
     name: "Vaishno Devi Temple",
     location: "Jammu & Kashmir",
     status: "Live",
   },
+  { id: 5, name: "Meenakshi Temple", location: "Madurai", status: "Offline" },
+  { id: 6, name: "Somnath Temple", location: "Gujarat", status: "Live" },
   {
-    id: 5,
-    name: "Meenakshi Temple",
-    location: "Madurai",
+    id: 7,
+    name: "Tirupati Balaji Temple",
+    location: "Tirupati",
     status: "Offline",
   },
 ];
@@ -36,35 +28,57 @@ export const mandirListData = [
 const MandirList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [mandirList, setMandirList] = useState(mandirListData);
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
+  // Search functionality
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  const filteredMandirList = mandirList.filter(
+  // Sort functionality
+  const handleSort = () => {
+    const sortedList = [...mandirList].sort((a, b) =>
+      sortOrder === "asc" ? a.id - b.id : b.id - a.id
+    );
+    setMandirList(sortedList);
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  };
+
+  // Delete functionality
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this mandir?")) {
+      const updatedList = mandirList.filter((mandir) => mandir.id !== id);
+      setMandirList(updatedList);
+    }
+  };
+
+  // Pagination calculations
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = mandirList.slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(mandirList.length / itemsPerPage);
+
+  const filteredMandirList = currentItems.filter(
     (mandir) =>
       mandir.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       mandir.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleEdit = (id) => {
-    alert(`Edit functionality for Mandir ID: ${id}`);
-    // Add your logic to handle edit functionality here
-  };
-
-  const handleAddMandir = () => {
-    alert("Redirect to Add Mandir Modal");
-    // Add your logic to redirect to the Add Mandir modal here
-  };
-
   return (
-    <div className="container my-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
+    <div className="container">
+      <div className="d-flex justify-content-between align-items-center mb-2">
         <h3 className="text-primary">Mandir List</h3>
         <div>
           <button
-            className="btn btn-success btn-sm me-2"
-            onClick={handleAddMandir}
+            className="btn btn-sm me-2"
+            style={{
+              backgroundColor: "#ff5722", // Primary theme color
+              color: "#ffffff", // White text for contrast
+            }}
+            onClick={() => alert("Redirect to Add Mandir Modal")}
           >
             <i className="bi bi-plus-circle"></i> Add Mandir
           </button>
@@ -91,7 +105,14 @@ const MandirList = () => {
             }}
           >
             <tr>
-              <th>#</th>
+              <th onClick={handleSort} style={{ cursor: "pointer" }}>
+                #{" "}
+                <i
+                  className={`bi ${
+                    sortOrder === "asc" ? "bi-arrow-up" : "bi-arrow-down"
+                  }`}
+                ></i>
+              </th>
               <th>Name</th>
               <th>Location</th>
               <th>Status</th>
@@ -100,14 +121,7 @@ const MandirList = () => {
           </thead>
           <tbody>
             {filteredMandirList.map((mandir) => (
-              <tr
-                key={mandir.id}
-                className="align-middle"
-                style={{
-                  backgroundColor: "#ffffff",
-                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                }}
-              >
+              <tr key={mandir.id}>
                 <td className="fw-bold">{mandir.id}</td>
                 <td>{mandir.name}</td>
                 <td>{mandir.location}</td>
@@ -127,16 +141,54 @@ const MandirList = () => {
                 </td>
                 <td>
                   <button
-                    className="btn btn-warning btn-sm"
-                    onClick={() => handleEdit(mandir.id)}
+                    className="btn btn-warning btn-sm me-2"
+                    onClick={() =>
+                      alert(`Edit functionality for Mandir ID: ${mandir.id}`)
+                    }
                   >
                     <i className="bi bi-pencil-square"></i> Edit
+                  </button>
+                  <button
+                    className="btn btn-danger btn-sm"
+                    onClick={() => handleDelete(mandir.id)}
+                  >
+                    <i className="bi bi-trash"></i> Delete
                   </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+      </div>
+      {/* Pagination Controls */}
+      <div className="d-flex justify-content-between align-items-center mt-3">
+        <button
+          className="btn  btn-sm"
+          style={{
+            backgroundColor: "#ff5722", // Primary theme color
+            color: "#ffffff", // White text for contrast
+          }}
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          className="btn btn-primary btn-sm"
+          style={{
+            backgroundColor: "#ff5722", // Primary theme color
+            color: "#ffffff", // White text for contrast
+          }}
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
       </div>
     </div>
   );

@@ -1,7 +1,10 @@
 .icon{ 
-   color: #f77206 ; /* Force color to apply */
+   color: #f77206 ; /* sidebar icons */
 }
 
+.icons{
+  color: #f77206 !important; /* Force color to apply */
+}
 
 
 
@@ -24,7 +27,7 @@
 
 
 .sidebar {
-  background-color: #00796b  ;
+  background-color: #333333   ;
   color: rgb(231, 228, 222);
   width: 20%;
   min-height: 100vh; /* Ensures sidebar spans the entire viewport */

@@ -77,29 +77,29 @@ const Home = () => {
           <div className="row">
             {[
               {
-                title: "Total Users",
+                title: " Users",
                 value: `${UserCount}`,
-                icon: "bi bi-people icon",
+                icon: "bi bi-people icons",
               },
               {
-                title: "Total Temples",
+                title: " Mandir",
                 value: `${MandirCount}`,
-                icon: "bi bi-building icon",
+                icon: "bi bi-building icons",
               },
               {
-                title: "Total Events",
+                title: " Events",
                 value: `${EventCount}`,
-                icon: "bi bi-calendar-event icon",
+                icon: "bi bi-calendar-event icons",
               },
               {
                 title: "Live Mandir",
                 value: `${liveCount}`,
-                icon: "bi bi-broadcast icon",
+                icon: "bi bi-broadcast icons",
               },
               {
                 title: "Offline Mandir",
                 value: `${offlineCount}`,
-                icon: "bi bi-house icon",
+                icon: "bi bi-house icons",
               },
             ].map((item, index) => (
               <div className="col-6 col-sm-4 col-md-3 mb-4" key={index}>
@@ -115,13 +115,10 @@ const Home = () => {
                   <div className="card-body">
                     <i
                       className={`${item.icon} text-primary mb-2`}
-                      style={{ fontSize: "2rem" }} // Smaller icon size
+                      style={{ fontSize: "1.5rem" }} // Smaller icon size
                     ></i>
                     <h6 className="card-title">{item.title}</h6>
                     <h4 className="text-primary fw-bold">{item.value}</h4>
-                    <p className="text-muted" style={{ fontSize: "0.85rem" }}>
-                      Details about {item.title.toLowerCase()}.
-                    </p>
                   </div>
                 </div>
               </div>
@@ -202,23 +199,23 @@ const Home = () => {
             {[
               {
                 title: "Add Mandir",
-                icon: "bi bi-building", // Temple icon
+                icon: "bi bi-building icons", // Temple icon
               },
               {
                 title: "Add Event",
-                icon: "bi bi-calendar-event", // Event icon
+                icon: "bi bi-calendar-event icons", // Event icon
               },
               {
                 title: "Add Book",
-                icon: "bi bi-book", // Book icon
+                icon: "bi bi-book icons", // Book icon
               },
               {
                 title: "Add Suvichar",
-                icon: "bi bi-chat-quote", // Good thoughts icon
+                icon: "bi bi-chat-quote icons", // Good thoughts icon
               },
               {
                 title: "Add Indian History",
-                icon: "bi bi-clock-history", // History icon
+                icon: "bi bi-clock-history icons", // History icon
               },
             ].map((item, index) => (
               <div className="col-6 col-sm-4 col-md-3 mb-4" key={index}>
@@ -227,7 +224,7 @@ const Home = () => {
                   style={{
                     borderRadius: "8px",
                     background: "linear-gradient(135deg, #ffffff, #f8f9fa)",
-                    height: "250px", // Fixed height for uniformity
+                    height: "200px", // Fixed height for uniformity
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between", // Ensures even spacing
@@ -236,12 +233,12 @@ const Home = () => {
                 >
                   <div className="card-body d-flex flex-column align-items-center justify-content-center">
                     <i
-                      className={`${item.icon} text-primary mb-3`}
-                      style={{ fontSize: "2rem" }}
+                      className={`${item.icon} text-primary mb-2`}
+                      style={{ fontSize: "1.5rem" }}
                     ></i>
                     <h6 className="card-title mb-2">{item.title}</h6>
                     <p
-                      className="text-muted mb-3"
+                      className="text-muted mb-2"
                       style={{ fontSize: "0.85rem", lineHeight: "1.2" }}
                     >
                       Manage {item.title.toLowerCase()} here.
@@ -265,7 +262,7 @@ const Home = () => {
                       (e.target.style.backgroundColor = "#ff5722")
                     }
                   >
-                    Add {item.title}
+                    {item.title}
                   </button>
                 </div>
               </div>
@@ -324,7 +321,7 @@ const Home = () => {
                     className={`bi bi-speedometer2 me-2 ${
                       activeTab === "dashboard" ? "text-white" : "icon"
                     }`}
-                  ></i>
+                  ></i>{" "}
                   Dashboard
                 </button>
               </li>
@@ -339,7 +336,7 @@ const Home = () => {
                     className={`bi icon bi-layout-text-sidebar me-2 ${
                       activeTab === "cms" ? "text-white" : "icon"
                     }`}
-                  ></i>
+                  ></i>{" "}
                   CMS
                 </button>
               </li>
@@ -350,7 +347,12 @@ const Home = () => {
                   }`}
                   onClick={() => handleTabChange("mandirList")}
                 >
-                  <i className="bi icon bi-list-ul me-2"></i> Mandir List
+                  <i
+                    className={`bi icon bi-list-ul me-2 ${
+                      activeTab === "mandirList" ? "text-white" : "icon"
+                    }`}
+                  ></i>{" "}
+                  Mandir List
                 </button>
               </li>
               <li className="nav-item mb-3">
@@ -360,7 +362,12 @@ const Home = () => {
                   }`}
                   onClick={() => handleTabChange("userList")}
                 >
-                  <i className="bi icon bi-people me-2"></i> User List
+                  <i
+                    className={`bi icon bi-people me-2 ${
+                      activeTab === "userList" ? "text-white" : "icon"
+                    }`}
+                  ></i>{" "}
+                  User List
                 </button>
               </li>
               <li className="nav-item mb-3">
@@ -370,7 +377,12 @@ const Home = () => {
                   }`}
                   onClick={() => handleTabChange("eventList")}
                 >
-                  <i className="bi icon bi-calendar-event me-2"></i> Event List
+                  <i
+                    className={`bi icon bi-calendar-event me-2 ${
+                      activeTab === "eventList" ? "text-white" : "icon"
+                    }`}
+                  ></i>{" "}
+                  Event List
                 </button>
               </li>
               <li className="nav-item mb-3">
@@ -380,7 +392,12 @@ const Home = () => {
                   }`}
                   onClick={() => handleTabChange("bookList")}
                 >
-                  <i className="bi icon bi-book me-2"></i> Book List
+                  <i
+                    className={`bi icon bi-book me-2 ${
+                      activeTab === "bookList" ? "text-white" : "icon"
+                    }`}
+                  ></i>{" "}
+                  Book List
                 </button>
               </li>
               <li className="nav-item mb-3">
@@ -390,7 +407,12 @@ const Home = () => {
                   }`}
                   onClick={() => handleTabChange("offlineMandir")}
                 >
-                  <i className="bi icon bi-building me-2"></i> Offline Mandir
+                  <i
+                    className={`bi icon bi-building me-2 ${
+                      activeTab === "offlineMandir" ? "text-white" : "icon"
+                    }`}
+                  ></i>{" "}
+                  Offline Mandir
                 </button>
               </li>
               <li className="nav-item mb-3">
@@ -400,8 +422,12 @@ const Home = () => {
                   }`}
                   onClick={() => handleTabChange("userManagement")}
                 >
-                  <i className="bi icon bi-person-circle me-2"></i> User
-                  Management
+                  <i
+                    className={`bi icon bi-person-circle me-2 ${
+                      activeTab === "userManagement" ? "text-white" : "icon"
+                    }`}
+                  ></i>{" "}
+                  User Management
                 </button>
               </li>
               <li className="nav-item mb-3">
