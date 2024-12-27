@@ -177,7 +177,7 @@ const MandirList = () => {
           Page {currentPage} of {totalPages}
         </span>
         <button
-          className="btn btn-primary btn-sm"
+          className="btn  btn-sm"
           style={{
             backgroundColor: "#ff5722", // Primary theme color
             color: "#ffffff", // White text for contrast

@@ -4,7 +4,7 @@ import Event from "./CMS/Event"; // Import Event form
 import Mandir from "./CMS/Mandir";
 import Book from "./CMS/Book";
 import Suvichar from "./CMS/Suvichar";
-import History from "./CMS/History";
+import History from "./CMS/Horoscope";
 import Navbar from "./Navbar";
 import MandirList, { mandirListData } from "/src/List/MandirList.jsx";
 import BookList from "./LIst/BookList";
@@ -17,6 +17,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 // import "bootstrap/dist/css/bootstrap.min.css";
 // import "bootstrap-icons/font/bootstrap-icons.css";
 import "./Home.css"; // Add custom styles here
+import Horoscope from "./CMS/Horoscope";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -214,8 +215,8 @@ const Home = () => {
                 icon: "bi bi-chat-quote icons", // Good thoughts icon
               },
               {
-                title: "Add Indian History",
-                icon: "bi bi-clock-history icons", // History icon
+                title: "Add Daily Horoscope",
+                icon: "bi bi-moon-stars icons", // History icon
               },
             ].map((item, index) => (
               <div className="col-6 col-sm-4 col-md-3 mb-4" key={index}>
@@ -237,12 +238,6 @@ const Home = () => {
                       style={{ fontSize: "1.5rem" }}
                     ></i>
                     <h6 className="card-title mb-2">{item.title}</h6>
-                    <p
-                      className="text-muted mb-2"
-                      style={{ fontSize: "0.85rem", lineHeight: "1.2" }}
-                    >
-                      Manage {item.title.toLowerCase()} here.
-                    </p>
                   </div>
                   <button
                     className="btn btn-sm"
@@ -296,8 +291,8 @@ const Home = () => {
         return <Book />; // Add form for Book
       case "Add Suvichar":
         return <Suvichar />; // Add form for Suvichar
-      case "Add Indian History":
-        return <History />; // Add form for Indian History
+      case "Add Daily Horoscope":
+        return <Horoscope />; // Add form for Indian History
       default:
         return <h4>Unknown Action</h4>;
     }

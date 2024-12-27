@@ -4,62 +4,63 @@ import axios from "axios";
 
 const Suvichar = () => {
   const navigate = useNavigate();
-
-  const [text, setText] = useState("");
-  const [author, setAuthor] = useState("");
+  const [image, setImage] = useState(null); // State for image file
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const formData = new FormData();
+    if (image) formData.append("image", image);
+
     try {
-      const response = await axios.post("/api/suvichar", { text, author });
+      const response = await axios.post("/api/suvichar", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-      alert("Suvichar added successfully!");
-      console.log(response.data);
+      alert("Image uploaded successfully!");
+      console.log("Response:", response.data);
 
-      // Reset form fields
-      setText("");
-      setAuthor("");
+      // Reset form field
+      setImage(null);
 
       navigate("/suvichar");
     } catch (error) {
-      console.error("Error adding suvichar:", error);
+      console.error("Error uploading image:", error);
     }
   };
 
   return (
     <div className="container mt-5">
-      <h2 className="text-center mb-4">Add New Suvichar</h2>
+      <h2 className="text-center mb-4">Upload Image</h2>
       <form onSubmit={handleSubmit} className="shadow p-4 rounded bg-light">
         <div className="mb-3">
-          <label htmlFor="text" className="form-label">
-            Suvichar
-          </label>
-          <textarea
-            className="form-control"
-            id="text"
-            placeholder="Enter suvichar text"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="author" className="form-label">
-            Author
+          <label htmlFor="image" className="form-label">
+            Upload Image
           </label>
           <input
-            type="text"
+            type="file"
+            accept="image/*"
             className="form-control"
-            id="author"
-            placeholder="Enter author name"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
+            id="image"
+            onChange={(e) => setImage(e.target.files[0])}
             required
           />
         </div>
-        <button type="submit" className="btn btn-primary w-100">
-          Add Suvichar
+        <button
+          type="submit"
+          className="btn  w-100"
+          style={{
+            backgroundColor: "#ff5722",
+            color: "#fff",
+            border: "none",
+            padding: "10px",
+            borderRadius: "5px",
+            fontWeight: "bold",
+          }}
+        >
+          Upload
         </button>
       </form>
     </div>
