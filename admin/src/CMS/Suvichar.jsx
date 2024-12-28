@@ -32,7 +32,7 @@ const Suvichar = () => {
   };
 
   return (
-    <div className="container mt-5">
+    <div className="container">
       <h2 className="text-center mb-4">Upload Image</h2>
       <form onSubmit={handleSubmit} className="shadow p-4 rounded bg-light">
         <div className="mb-3">

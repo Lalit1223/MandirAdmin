@@ -10,6 +10,8 @@ export const eventList = [
   },
   { id: 2, name: "Chhath Puja", date: "2024-11-19", location: "Patna" },
   { id: 3, name: "Maha Aarti", date: "2024-12-10", location: "Haridwar" },
+  { id: 6, name: "Hare krishna", date: "2024-12-24", location: "Vrindavan" },
+
   { id: 4, name: "Kumbh Mela", date: "2025-01-14", location: "Haridwar" },
   { id: 5, name: "Janmashtami", date: "2024-08-26", location: "Mathura" },
   { id: 6, name: "Holi Festival", date: "2025-03-24", location: "Vrindavan" },

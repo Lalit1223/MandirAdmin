@@ -1,10 +1,8 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import Event from "./CMS/Event"; // Import Event form
 import Mandir from "./CMS/Mandir";
 import Book from "./CMS/Book";
 import Suvichar from "./CMS/Suvichar";
-import History from "./CMS/Horoscope";
 import Navbar from "./Navbar";
 import MandirList, { mandirListData } from "/src/List/MandirList.jsx";
 import BookList from "./LIst/BookList";
@@ -42,18 +40,6 @@ const Home = () => {
     end: new Date(event.date), // Single-day events
     category: event.category || "default", // Assuming events have a category
   }));
-
-  const getEventColor = (event) => {
-    const categoryColors = {
-      default: "#ff5733", // Red for default category
-      religious: "#33b5ff", // Blue for religious events
-      festival: "#81c784", // Green for festivals
-      workshop: "#ffb74d", // Orange for workshops
-    };
-
-    // Default color if no category is matched
-    return categoryColors[event.category] || categoryColors["default"];
-  };
 
   var EventCount = eventList.length;
   var UserCount = userList.length;
@@ -159,7 +145,7 @@ const Home = () => {
                         event: ({ event }) => (
                           <span
                             style={{
-                              backgroundColor: getEventColor(event),
+                              backgroundColor: "#ffb74d",
                               padding: "5px",
                               borderRadius: "5px",
                               color: "#fff",
