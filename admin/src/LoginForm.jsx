@@ -1,14 +1,51 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css"; // Custom CSS for animations and religious theme
+import axios from "axios";
 
 const LoginForm = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false); // To manage loading state
+  const [error, setError] = useState(""); // To manage error message
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent default form submission
-    navigate("/home"); // Navigate to the App.js page
+
+    // Basic form validation
+    if (!email || !password) {
+      setError("Email and Password are required!");
+      return;
+    }
+
+    setLoading(true);
+    setError(""); // Clear previous error
+
+    try {
+      // Replace the URL with your login API endpoint
+      const response = await axios.post(
+        "http://localhost:3000/api/admin/login",
+        {
+          email,
+          password,
+        }
+      );
+
+      // Handle successful login (for example, save token in localStorage)
+      if (response.data.token) {
+        localStorage.setItem("authToken", response.data.token); // Save token to localStorage
+        navigate("/home"); // Redirect to home page after successful login
+      } else {
+        setError("Login failed. Please try again.");
+      }
+    } catch (error) {
+      setError("An error occurred. Please try again.");
+      console.error(error);
+    } finally {
+      setLoading(false); // Stop loading
+    }
   };
 
   return (
@@ -29,7 +66,7 @@ const LoginForm = () => {
       >
         <div className="text-center mb-4">
           <img
-            src="https://cdn.pixabay.com/photo/2016/07/23/16/19/symbol-1537054_1280.png" // Replace with your religious icon
+            src="https://cdn.pixabay.com/photo/2016/07/23/16/19/symbol-1537054_1280.png"
             alt="Icon"
             className="img-fluid mb-2"
             style={{ width: "80px", animation: "pulse 2s infinite" }}
@@ -39,6 +76,7 @@ const LoginForm = () => {
           </h4>
         </div>
         <form onSubmit={handleSubmit}>
+          {error && <div className="alert alert-danger">{error}</div>}
           <div className="form-group mb-3">
             <label htmlFor="email" className="form-label">
               Email Address
@@ -47,6 +85,8 @@ const LoginForm = () => {
               type="email"
               className="form-control"
               id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               required
             />
@@ -59,6 +99,8 @@ const LoginForm = () => {
               type="password"
               className="form-control"
               id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
             />
@@ -67,8 +109,9 @@ const LoginForm = () => {
             type="submit"
             className="btn btn-danger w-100"
             style={{ transition: "all 0.3s" }}
+            disabled={loading} // Disable button when loading
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
       </div>
