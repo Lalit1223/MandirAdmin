@@ -16,6 +16,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 // import "bootstrap-icons/font/bootstrap-icons.css";
 import "./Home.css"; // Add custom styles here
 import Horoscope from "./CMS/Horoscope";
+import OfflineMandir from "./LIst/OfflineMandir";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -259,7 +260,7 @@ const Home = () => {
       case "bookList":
         return <BookList />;
       case "offlineMandir":
-        return <h3>Offline Mandir</h3>;
+        return <OfflineMandir />;
       case "userManagement":
         return <h3>User Management</h3>;
       default:
