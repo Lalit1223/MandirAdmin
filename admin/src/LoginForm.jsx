@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./App.css"; // Custom CSS for animations and religious theme
+import "./App.css";
 import axios from "axios";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false); // To manage loading state
-  const [error, setError] = useState(""); // To manage error message
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
 
     // Basic form validation
     if (!email || !password) {
@@ -24,7 +24,6 @@ const LoginForm = () => {
     setError(""); // Clear previous error
 
     try {
-      // Replace the URL with your login API endpoint
       const response = await axios.post(
         "http://localhost:3000/api/admin/login",
         {
