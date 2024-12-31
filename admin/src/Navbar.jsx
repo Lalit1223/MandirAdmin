@@ -1,7 +1,20 @@
+import { useNavigate } from "react-router-dom"; // Import the navigation hook
+
 import React from "react";
 import { Link } from "react-router-dom";
 
 const Navbar = () => {
+  const navigate = useNavigate(); // Hook for navigation
+
+  const handleLogout = () => {
+    // Clear user data (if stored in localStorage/sessionStorage)
+    localStorage.removeItem("authToken"); // Assuming you store the token here
+    sessionStorage.removeItem("userSession"); // Optional: clear session storage
+
+    // Redirect to login page
+    navigate("/");
+  };
+
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <div className="container-fluid">
@@ -20,6 +33,7 @@ const Navbar = () => {
               <button
                 className="btn btn-sm me-4"
                 style={{ backgroundColor: "#ff5722", color: "#fff" }}
+                onClick={handleLogout}
               >
                 Logout
               </button>

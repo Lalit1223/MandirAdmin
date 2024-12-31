@@ -34,7 +34,8 @@ const LoginForm = () => {
 
       // Handle successful login (for example, save token in localStorage)
       if (response.data.token) {
-        localStorage.setItem("authToken", response.data.token); // Save token to localStorage
+        localStorage.setItem("authToken", response.data.token);
+        localStorage.setItem("isAuthenticated", true); // Save token to localStorage
         navigate("/home"); // Redirect to home page after successful login
       } else {
         setError("Login failed. Please try again.");

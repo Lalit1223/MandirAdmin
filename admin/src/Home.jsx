@@ -17,11 +17,13 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./Home.css"; // Add custom styles here
 import Horoscope from "./CMS/Horoscope";
 import OfflineMandir from "./LIst/OfflineMandir";
+import { useNavigate } from "react-router-dom"; // Import the navigation hook
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showModal, setShowModal] = useState(false);
   const [currentModal, setCurrentModal] = useState(""); // Track which modal to show
+  const navigate = useNavigate(); // Hook for navigation
 
   const handleTabChange = (tab) => setActiveTab(tab);
 
@@ -33,6 +35,16 @@ const Home = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setCurrentModal(""); // Reset the current modal type
+  };
+
+  // Logout Handler
+  const handleLogout = () => {
+    // Clear user data (if stored in localStorage/sessionStorage)
+    localStorage.removeItem("isAuthenticated"); // Assuming you store the token here
+    sessionStorage.removeItem("userSession"); // Optional: clear session storage
+
+    // Redirect to login page
+    navigate("/");
   };
 
   const events = eventList.map((event) => ({
@@ -413,7 +425,10 @@ const Home = () => {
                 </button>
               </li>
               <li className="nav-item mb-3">
-                <button className="btn btn-link text-start  w-100">
+                <button
+                  className="btn btn-link text-start  w-100"
+                  onClick={handleLogout}
+                >
                   <i className="bi icon bi-box-arrow-right me-2"></i> Logout
                 </button>
               </li>
