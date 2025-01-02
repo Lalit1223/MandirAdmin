@@ -8,13 +8,13 @@ const Navbar = () => {
 
   const handleLogout = () => {
     // Clear user data (if stored in localStorage/sessionStorage)
-    localStorage.removeItem("authToken"); // Assuming you store the token here
+    localStorage.removeItem("isAuthenticated"); // Assuming you store the token here
     sessionStorage.removeItem("userSession"); // Optional: clear session storage
+    localStorage.removeItem("authToken"); // Assuming you store the token here
 
     // Redirect to login page
     navigate("/");
   };
-
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <div className="container-fluid">

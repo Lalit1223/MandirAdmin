@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "animate.css/animate.min.css"; // For animations
+import MandirList from "../LIst/MandirList";
 
 const Mandir = () => {
   const navigate = useNavigate();
@@ -9,58 +9,99 @@ const Mandir = () => {
   const [title, setTitle] = useState("");
   const [nickname, setNickname] = useState("");
   const [description, setDescription] = useState("");
-  const [images, setImages] = useState([]);
   const [youtubeLink, setYoutubeLink] = useState("");
   const [offlineVideos, setOfflineVideos] = useState({
-    morning: "",
-    evening: "",
-    night: "",
+    offline_video_morning: "",
+    offline_video_evening: "",
+    offline_video_night: "",
   });
   const [aartiTimes, setAartiTimes] = useState({
-    morning: "",
-    evening: "",
-    night: "",
+    aarti_time_morning: "",
+    aarti_time_evening: "",
+    aarti_time_night: "",
   });
   const [mapLink, setMapLink] = useState("");
+  const [images, setImages] = useState([]); // New state for images
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleImageChange = (e) => {
+    const files = e.target.files;
+    const imagePromises = Array.from(files).map((file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          resolve(reader.result); // This will give you base64 encoded string
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file); // Convert image to base64
+      });
+    });
+
+    Promise.all(imagePromises)
+      .then((base64Images) => {
+        setImages(base64Images); // Store base64 images in state
+      })
+      .catch((err) => {
+        setError("Failed to read image files.");
+        console.error("Image conversion error:", err);
+      });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("nickname", nickname);
-    formData.append("description", description);
-    images.forEach((image) => formData.append("images", image));
-    formData.append("youtubeLink", youtubeLink);
-    formData.append("offlineVideosMorning", offlineVideos.morning);
-    formData.append("offlineVideosEvening", offlineVideos.evening);
-    formData.append("offlineVideosNight", offlineVideos.night);
-    formData.append("aartiTimesMorning", aartiTimes.morning);
-    formData.append("aartiTimesEvening", aartiTimes.evening);
-    formData.append("aartiTimesNight", aartiTimes.night);
-    formData.append("mapLink", mapLink);
+    setLoading(true);
+    setError("");
 
     try {
-      await axios.post("/api/mandir", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const response = await axios.post("http://localhost:3000/api/mandir", {
+        title,
+        nickname,
+        description,
+        images, // Send base64 encoded image strings
+        youtube_live_link: youtubeLink,
+        offline_video_morning: offlineVideos.offline_video_morning,
+        offline_video_evening: offlineVideos.offline_video_evening,
+        offline_video_night: offlineVideos.offline_video_night,
+        aarti_time_morning: aartiTimes.aarti_time_morning,
+        aarti_time_evening: aartiTimes.aarti_time_evening,
+        aarti_time_night: aartiTimes.aarti_time_night,
+        map_link: mapLink,
       });
+
       alert("Mandir added successfully!");
       setTitle("");
       setNickname("");
       setDescription("");
-      setImages([]);
       setYoutubeLink("");
-      setOfflineVideos({ morning: "", evening: "", night: "" });
-      setAartiTimes({ morning: "", evening: "", night: "" });
+      setOfflineVideos({
+        offline_video_morning: "",
+        offline_video_evening: "",
+        offline_video_night: "",
+      });
+      setAartiTimes({
+        aarti_time_morning: "",
+        aarti_time_evening: "",
+        aarti_time_night: "",
+      });
       setMapLink("");
-      navigate("/mandir");
-    } catch (error) {
-      console.error("Error adding mandir:", error);
+      setIsSubmitted(true);
+    } catch (err) {
+      console.error("Error adding mandir:", err);
+      setError("Failed to add Mandir. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (isSubmitted) {
+    return <MandirList />;
+  }
+
   return (
     <div
-      className="modal-wrapper animate__animated animate__fadeIn"
+      className="modal-wrapper"
       style={{
         maxWidth: "600px",
         margin: "auto",
@@ -77,84 +118,68 @@ const Mandir = () => {
         Add New Mandir
       </h2>
       <form onSubmit={handleSubmit}>
+        {error && <div className="alert alert-danger">{error}</div>}
+
+        {/* Title */}
         <div className="mb-3">
-          <label
-            htmlFor="title"
-            className="form-label"
-            style={{ fontWeight: "bold" }}
-          >
+          <label htmlFor="title" className="form-label">
             Title
           </label>
           <input
             type="text"
             className="form-control"
             id="title"
-            placeholder="Enter title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
           />
         </div>
 
+        {/* Nickname */}
         <div className="mb-3">
-          <label
-            htmlFor="nickname"
-            className="form-label"
-            style={{ fontWeight: "bold" }}
-          >
+          <label htmlFor="nickname" className="form-label">
             Nickname
           </label>
           <input
             type="text"
             className="form-control"
             id="nickname"
-            placeholder="Enter nickname"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
           />
         </div>
 
+        {/* Description */}
         <div className="mb-3">
-          <label
-            htmlFor="description"
-            className="form-label"
-            style={{ fontWeight: "bold" }}
-          >
+          <label htmlFor="description" className="form-label">
             Description
           </label>
           <textarea
             className="form-control"
             id="description"
-            maxLength="100"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
           ></textarea>
         </div>
 
+        {/* Image Upload */}
         <div className="mb-3">
-          <label
-            htmlFor="images"
-            className="form-label"
-            style={{ fontWeight: "bold" }}
-          >
-            Images (Max 5)
+          <label htmlFor="images" className="form-label">
+            Upload Images
           </label>
           <input
             type="file"
             className="form-control"
-            multiple
             id="images"
-            onChange={(e) => setImages([...e.target.files])}
+            onChange={handleImageChange}
+            multiple
           />
         </div>
 
+        {/* YouTube Link */}
         <div className="mb-3">
-          <label
-            htmlFor="youtubeLink"
-            className="form-label"
-            style={{ fontWeight: "bold" }}
-          >
+          <label htmlFor="youtubeLink" className="form-label">
             YouTube Live Link
           </label>
           <input
@@ -166,78 +191,88 @@ const Mandir = () => {
           />
         </div>
 
+        {/* Offline Video Links */}
         <div className="mb-3">
-          <label className="form-label" style={{ fontWeight: "bold" }}>
-            Offline Video Links
-          </label>
+          <label className="form-label">Offline Video Links</label>
           <input
             type="url"
             className="form-control mb-2"
             placeholder="Morning Aarti Video"
-            value={offlineVideos.morning}
+            value={offlineVideos.offline_video_morning}
             onChange={(e) =>
-              setOfflineVideos({ ...offlineVideos, morning: e.target.value })
+              setOfflineVideos({
+                ...offlineVideos,
+                offline_video_morning: e.target.value,
+              })
             }
           />
           <input
             type="url"
             className="form-control mb-2"
             placeholder="Evening Aarti Video"
-            value={offlineVideos.evening}
+            value={offlineVideos.offline_video_evening}
             onChange={(e) =>
-              setOfflineVideos({ ...offlineVideos, evening: e.target.value })
+              setOfflineVideos({
+                ...offlineVideos,
+                offline_video_evening: e.target.value,
+              })
             }
           />
           <input
             type="url"
             className="form-control"
             placeholder="Night Aarti Video"
-            value={offlineVideos.night}
+            value={offlineVideos.offline_video_night}
             onChange={(e) =>
-              setOfflineVideos({ ...offlineVideos, night: e.target.value })
+              setOfflineVideos({
+                ...offlineVideos,
+                offline_video_night: e.target.value,
+              })
             }
           />
         </div>
 
+        {/* Aarti Times */}
         <div className="mb-3">
-          <label className="form-label" style={{ fontWeight: "bold" }}>
-            Aarti Times
-          </label>
+          <label className="form-label">Aarti Times</label>
           <input
             type="time"
             className="form-control mb-2"
-            placeholder="Morning Aarti Time"
-            value={aartiTimes.morning}
+            value={aartiTimes.aarti_time_morning}
             onChange={(e) =>
-              setAartiTimes({ ...aartiTimes, morning: e.target.value })
+              setAartiTimes({
+                ...aartiTimes,
+                aarti_time_morning: e.target.value,
+              })
             }
           />
           <input
             type="time"
             className="form-control mb-2"
-            placeholder="Evening Aarti Time"
-            value={aartiTimes.evening}
+            value={aartiTimes.aarti_time_evening}
             onChange={(e) =>
-              setAartiTimes({ ...aartiTimes, evening: e.target.value })
+              setAartiTimes({
+                ...aartiTimes,
+                aarti_time_evening: e.target.value,
+              })
             }
           />
           <input
             type="time"
             className="form-control"
-            placeholder="Night Aarti Time"
-            value={aartiTimes.night}
+            value={aartiTimes.aarti_time_night}
             onChange={(e) =>
-              setAartiTimes({ ...aartiTimes, night: e.target.value })
+              setAartiTimes({
+                ...aartiTimes,
+                aarti_time_night: e.target.value,
+              })
             }
           />
         </div>
 
+        {/* Map Link */}
         <div className="mb-3">
-          <label
-            htmlFor="mapLink"
-            className="form-label"
-            style={{ fontWeight: "bold" }}
-          >
+          <label htmlFor="mapLink" className="form-label">
             Map Link
           </label>
           <input
@@ -249,19 +284,13 @@ const Mandir = () => {
           />
         </div>
 
+        {/* Submit Button */}
         <button
           type="submit"
           className="btn btn-primary w-100"
-          style={{
-            backgroundColor: "#ff5722",
-            color: "#fff",
-            border: "none",
-            padding: "10px",
-            borderRadius: "5px",
-            fontWeight: "bold",
-          }}
+          disabled={loading}
         >
-          Add Mandir
+          {loading ? "Adding Mandir..." : "Add Mandir"}
         </button>
       </form>
     </div>

@@ -4,16 +4,13 @@ import Mandir from "./CMS/Mandir";
 import Book from "./CMS/Book";
 import Suvichar from "./CMS/Suvichar";
 import Navbar from "./Navbar";
-import MandirList, { mandirListData } from "/src/List/MandirList.jsx";
+import MandirList, { mandirListData } from "./LIst/MandirList";
 import BookList from "./LIst/BookList";
 import UserList, { userList } from "./LIst/UserList";
 import EventList, { eventList } from "./LIst/EventList";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-
-// import "bootstrap/dist/css/bootstrap.min.css";
-// import "bootstrap-icons/font/bootstrap-icons.css";
 import "./Home.css"; // Add custom styles here
 import Horoscope from "./CMS/Horoscope";
 import OfflineMandir from "./LIst/OfflineMandir";
@@ -42,6 +39,7 @@ const Home = () => {
     // Clear user data (if stored in localStorage/sessionStorage)
     localStorage.removeItem("isAuthenticated"); // Assuming you store the token here
     sessionStorage.removeItem("userSession"); // Optional: clear session storage
+    localStorage.removeItem("authToken"); // Assuming you store the token here
 
     // Redirect to login page
     navigate("/");
