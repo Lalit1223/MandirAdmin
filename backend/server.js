@@ -5,6 +5,8 @@ const bodyParser = require("body-parser");
 const path = require("path"); // Import path module
 const adminRoutes = require("./routes/adminRoutes");
 const mandirRoutes = require("./routes/mandirRoutes"); // Add Mandir routes
+const eventRoutes = require("./routes/eventRoutes");
+const bookRoutes = require("./routes/bookRoutes");
 
 const app = express();
 
@@ -26,7 +28,9 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve u
 
 // Routes
 app.use("/api/admin", adminRoutes);
-app.use("/api/mandir", mandirRoutes); // Add Mandir routes
+app.use("/api/mandir", mandirRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/books", bookRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;

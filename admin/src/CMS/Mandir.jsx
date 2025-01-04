@@ -287,8 +287,16 @@ const Mandir = () => {
         {/* Submit Button */}
         <button
           type="submit"
-          className="btn btn-primary w-100"
+          className="btn  w-100"
           disabled={loading}
+          style={{
+            backgroundColor: "#ff5722",
+            color: "#fff",
+            border: "none",
+            padding: "10px",
+            borderRadius: "5px",
+            fontWeight: "bold",
+          }}
         >
           {loading ? "Adding Mandir..." : "Add Mandir"}
         </button>

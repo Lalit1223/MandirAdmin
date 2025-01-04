@@ -1,7 +1,8 @@
 const mandirModel = require("../models/mandirModel"); // Import model
-const path = require("path");
-const fs = require("fs");
 
+const { saveBase64File } = require("../config/saveBase64File");
+
+// Add Mandir
 const addMandir = async (req, res) => {
   const {
     title,
@@ -15,36 +16,22 @@ const addMandir = async (req, res) => {
     aarti_time_evening,
     aarti_time_night,
     map_link,
-    images, // expecting base64 images in the request body
+    images, // expecting base64 images
   } = req.body;
 
-  // Decode base64 images and store in the "uploads" directory
   let imageUrls = [];
   if (images && images.length > 0) {
     try {
-      imageUrls = await Promise.all(
-        images.map(async (image) => {
-          const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
-          const fileName = `${Date.now()}-${Math.random()
-            .toString(36)
-            .substr(2, 9)}.jpg`;
-          const filePath = path.join(__dirname, "../uploads", fileName);
-
-          // Write the base64 data to a file in the "uploads" folder
-          fs.writeFileSync(filePath, base64Data, "base64");
-
-          // Return the path where the image is saved
-          return `/uploads/${fileName}`;
-        })
+      imageUrls = images.map((image) =>
+        saveBase64File(image, "uploads", "mandir")
       );
     } catch (err) {
-      console.error("Error saving base64 images:", err);
+      console.error("Error saving images:", err);
       return res.status(500).json({ error: "Failed to save images." });
     }
   }
 
   try {
-    // Call the model to add mandir
     const mandirId = await mandirModel.addMandir({
       title,
       nickname,
@@ -60,16 +47,14 @@ const addMandir = async (req, res) => {
       images: imageUrls,
     });
 
-    res.status(201).json({
-      message: "Mandir added successfully.",
-      mandirId,
-    });
+    res.status(201).json({ message: "Mandir added successfully", mandirId });
   } catch (err) {
     console.error("Error adding mandir:", err);
     res.status(500).json({ error: "Failed to add mandir." });
   }
 };
 
+// Update Mandir
 const updateMandir = async (req, res) => {
   const mandirId = req.params.id;
   const {
@@ -84,37 +69,23 @@ const updateMandir = async (req, res) => {
     aarti_time_evening,
     aarti_time_night,
     map_link,
-    images, // expecting base64 images in the request body
+    images,
   } = req.body;
 
-  // Decode base64 images and store in the "uploads" directory
   let imageUrls = [];
   if (images && images.length > 0) {
     try {
-      imageUrls = await Promise.all(
-        images.map(async (image) => {
-          const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
-          const fileName = `${Date.now()}-${Math.random()
-            .toString(36)
-            .substr(2, 9)}.jpg`;
-          const filePath = path.join(__dirname, "../uploads", fileName);
-
-          // Write the base64 data to a file in the "uploads" folder
-          fs.writeFileSync(filePath, base64Data, "base64");
-
-          // Return the path where the image is saved
-          return `/uploads/${fileName}`;
-        })
+      imageUrls = images.map((image) =>
+        saveBase64File(image, "uploads", "mandir")
       );
     } catch (err) {
-      console.error("Error saving base64 images:", err);
+      console.error("Error saving images:", err);
       return res.status(500).json({ error: "Failed to save images." });
     }
   }
 
   try {
-    // Call the model to update mandir
-    const result = await mandirModel.updateMandir(mandirId, {
+    const updated = await mandirModel.updateMandir(mandirId, {
       title,
       nickname,
       description,
@@ -129,7 +100,7 @@ const updateMandir = async (req, res) => {
       images: imageUrls,
     });
 
-    if (result === 0) {
+    if (!updated) {
       return res.status(404).json({ error: "Mandir not found." });
     }
 
@@ -139,7 +110,6 @@ const updateMandir = async (req, res) => {
     res.status(500).json({ error: "Failed to update mandir." });
   }
 };
-
 const deleteMandir = async (req, res) => {
   const mandirId = req.params.id;
 

@@ -34,8 +34,47 @@ const createMandirTable = async () => {
   }
 };
 
-// Automatically create the table on initialization
-createMandirTable();
+const createEventTable = async () => {
+  const query = `
+    CREATE TABLE IF NOT EXISTS  events (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  location VARCHAR(255) NOT NULL,
+  date DATE NOT NULL,
+  time TIME NOT NULL,
+  description TEXT NOT NULL,
+  link VARCHAR(255),
+  banner_image VARCHAR(255) NOT NULL
+);
+  `;
+  try {
+    await pool.promise().query(query);
+  } catch (err) {
+    console.error("Error creating event table:", err);
+  }
+};
 
+const createBookTable = async () => {
+  const query = `
+    CREATE TABLE IF NOT EXISTS books (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      cover_image VARCHAR(255), -- Path to the cover image
+      pdf_file VARCHAR(255) -- Path to the PDF file
+    );
+  `;
+  try {
+    await pool.promise().query(query);
+  } catch (err) {
+    console.error("Error creating books table:", err);
+  }
+};
+
+// Add to the initialization block
+(async () => {
+  await createMandirTable();
+  await createEventTable();
+  await createBookTable(); // Call the book table creation function
+})();
 // Export the pool for querying the database
 module.exports = pool.promise();

@@ -12,26 +12,35 @@ const Event = () => {
   const [time, setTime] = useState("");
   const [description, setDescription] = useState("");
   const [link, setLink] = useState("");
-  const [bannerImage, setBannerImage] = useState(null);
+  const [bannerImage, setBannerImage] = useState("");
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setBannerImage(reader.result); // Save base64 string
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("location", location);
-    formData.append("date", date);
-    formData.append("time", time);
-    formData.append("description", description);
-    formData.append("link", link);
-    if (bannerImage) formData.append("bannerImage", bannerImage);
-
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}: ${value}`);
-    }
+    const eventData = {
+      title,
+      location,
+      date,
+      time,
+      description,
+      link,
+      bannerImage,
+    };
 
     try {
-      // await axios.post("/api/events", formData); // Send the event data to backend
+      const response = await axios.post(
+        "http://localhost:3000/api/events",
+        eventData
+      );
       alert("Event added successfully!");
 
       // Reset form fields
@@ -41,17 +50,18 @@ const Event = () => {
       setTime("");
       setDescription("");
       setLink("");
-      setBannerImage(null);
+      setBannerImage("");
 
-      // Navigate to the events page or wherever you need
+      // Navigate to the events page or render another component
       navigate("/event");
     } catch (error) {
       console.error("Error adding event:", error);
+      alert("Failed to add the event. Please try again.");
     }
   };
 
   return (
-    <div className="container  animate__animated animate__fadeIn">
+    <div className="container animate__animated animate__fadeIn">
       <h2 className="text-center mb-4">Create New Event</h2>
       <form onSubmit={handleSubmit} className="shadow p-4 rounded bg-light">
         <div className="mb-3">
@@ -63,7 +73,7 @@ const Event = () => {
             accept="image/*"
             className="form-control"
             id="bannerImage"
-            onChange={(e) => setBannerImage(e.target.files[0])}
+            onChange={handleImageChange}
             required
           />
         </div>
@@ -157,7 +167,7 @@ const Event = () => {
 
         <button
           type="submit"
-          className="btn  w-100"
+          className="btn w-100"
           style={{
             backgroundColor: "#ff5722",
             color: "#fff",
