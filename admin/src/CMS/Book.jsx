@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
+import BookList from "../LIst/BookList";
 
 const Book = () => {
   const [name, setName] = useState(""); // Book name
   const [image, setImage] = useState(null); // Cover image
   const [pdfFile, setPdfFile] = useState(null); // PDF file
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   // Convert file to base64
   const fileToBase64 = (file) => {
@@ -60,17 +62,21 @@ const Book = () => {
       );
 
       alert("Book added successfully!");
-      console.log(response.data);
 
       // Reset form fields
       setName("");
       setImage(null);
       setPdfFile(null);
+      setIsSubmitted(true);
     } catch (error) {
       console.error("Error adding book:", error);
       alert("Failed to add book. Please try again.");
     }
   };
+
+  if (isSubmitted) {
+    return <BookList />;
+  }
 
   return (
     <div className="container">

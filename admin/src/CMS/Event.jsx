@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "animate.css/animate.min.css"; // For animations
+import EventList from "../LIst/EventList";
 
 const Event = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const Event = () => {
   const [description, setDescription] = useState("");
   const [link, setLink] = useState("");
   const [bannerImage, setBannerImage] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -53,13 +55,15 @@ const Event = () => {
       setBannerImage("");
 
       // Navigate to the events page or render another component
-      navigate("/event");
+      setIsSubmitted(true);
     } catch (error) {
       console.error("Error adding event:", error);
       alert("Failed to add the event. Please try again.");
     }
   };
-
+  if (isSubmitted) {
+    return <EventList />;
+  }
   return (
     <div className="container animate__animated animate__fadeIn">
       <h2 className="text-center mb-4">Create New Event</h2>
