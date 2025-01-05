@@ -1,42 +1,30 @@
-const pool = require("../config/db");
+const db = require("../config/db");
 
 // Add a new book
-
-const addBook = async (bookData) => {
-  const query = `
-    INSERT INTO books (name, cover_image, pdf_file) 
-    VALUES (?, ?, ?)
-  `;
-
-  const values = [bookData.name, bookData.cover_image, bookData.pdf_file];
-
-  try {
-    const [result] = await pool.query(query, values);
-    return result.insertId; // Return the newly inserted event ID
-  } catch (err) {
-    throw new Error("Failed to add event");
-  }
+const addBook = async ({ name, coverImagePath, pdfFilePath }) => {
+  const [result] = await db.query(
+    "INSERT INTO books (name, coverImagePath, pdfFilePath) VALUES (?, ?, ?)",
+    [name, coverImagePath, pdfFilePath]
+  );
+  return result.insertId;
 };
 
 // Get all books
 const getAllBooks = async () => {
-  const query = "SELECT * FROM books";
-  const [books] = await pool.query(query);
-  return books;
+  const [rows] = await db.query("SELECT * FROM books");
+  return rows;
 };
 
 // Get a book by ID
 const getBookById = async (id) => {
-  const query = "SELECT * FROM books WHERE id = ?";
-  const [books] = await pool.query(query, [id]);
-  return books[0]; // Return the first (and only) book
+  const [rows] = await db.query("SELECT * FROM books WHERE id = ?", [id]);
+  return rows[0];
 };
 
 // Delete a book by ID
 const deleteBookById = async (id) => {
-  const query = "DELETE FROM books WHERE id = ?";
-  const [result] = await pool.query(query, [id]);
-  return result.affectedRows; // Return the number of rows affected
+  const [result] = await db.query("DELETE FROM books WHERE id = ?", [id]);
+  return result.affectedRows;
 };
 
 module.exports = {

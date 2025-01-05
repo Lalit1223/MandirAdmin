@@ -56,13 +56,12 @@ const createEventTable = async () => {
 
 const createBookTable = async () => {
   const query = `
-    CREATE TABLE IF NOT EXISTS books (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      cover_image VARCHAR(255), -- Path to the cover image
-      pdf_file VARCHAR(255) -- Path to the PDF file
-    );
-  `;
+ CREATE TABLE IF NOT EXISTS books (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    coverImagePath VARCHAR(255),
+    pdfFilePath VARCHAR(255)
+); `;
   try {
     await pool.promise().query(query);
   } catch (err) {

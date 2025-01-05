@@ -1,11 +1,8 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import MandirList from "../LIst/MandirList";
 
 const Mandir = () => {
-  const navigate = useNavigate();
-
   const [title, setTitle] = useState("");
   const [nickname, setNickname] = useState("");
   const [description, setDescription] = useState("");

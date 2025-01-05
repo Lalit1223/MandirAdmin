@@ -3,74 +3,80 @@ const bookModel = require("../models/bookModel");
 
 // Add a new book
 const addNewBook = async (req, res) => {
-  const { name, coverImage, pdfFile } = req.body;
+  const { name, image, pdfFile } = req.body;
+
+  if (!name || !image || !pdfFile) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
 
   try {
-    const coverImagePath = saveBase64File(coverImage, "uploads", "books");
-    const pdfFilePath = saveBase64File(pdfFile, "uploads", "books2");
+    // Save files to disk
+    const coverImagePath = saveBase64File(image, "uploads", "bookimages");
+    const pdfFilePath = saveBase64File(pdfFile, "uploads", "bookpdfs");
 
-    const bookId = await bookModel.addEvent({
+    // Save book details to database
+    const bookId = await bookModel.addBook({
       name,
       coverImagePath,
       pdfFilePath,
     });
 
-    res.status(201).json({ message: "Event added successfully", bookId });
-  } catch (err) {
-    console.error("Error adding book:", err);
-    res.status(500).json({ error: "Failed to add book." });
+    res.status(201).json({ message: "Book added successfully", bookId });
+  } catch (error) {
+    console.error("Error adding book:", error);
+    res.status(500).json({ error: "Failed to add book" });
   }
 };
 
 // Get all books
-const getAllBooksController = async (req, res) => {
+const getAllBooks = async (req, res) => {
   try {
-    const books = await getAllBooks();
+    const books = await bookModel.getAllBooks();
     res.status(200).json(books);
-  } catch (err) {
-    console.error("Error fetching books:", err);
+  } catch (error) {
+    console.error("Error fetching books:", error);
     res.status(500).json({ error: "Failed to fetch books" });
   }
 };
 
 // Get book by ID
-const getBookByIdController = async (req, res) => {
+const getBookById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const book = await getBookById(id);
+    const book = await bookModel.getBookById(id);
     if (book) {
       res.status(200).json(book);
     } else {
       res.status(404).json({ error: "Book not found" });
     }
-  } catch (err) {
-    console.error("Error fetching book:", err);
+  } catch (error) {
+    console.error("Error fetching book:", error);
     res.status(500).json({ error: "Failed to fetch book" });
   }
 };
 
 // Delete book by ID
-const deleteBookController = async (req, res) => {
+const deleteBook = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const rowsDeleted = await deleteBookById(id);
+    const rowsDeleted = await bookModel.deleteBookById(id);
 
     if (rowsDeleted > 0) {
       res.status(200).json({ message: "Book deleted successfully" });
     } else {
       res.status(404).json({ error: "Book not found" });
     }
-  } catch (err) {
-    console.error("Error deleting book:", err);
+  } catch (error) {
+    console.error("Error deleting book:", error);
     res.status(500).json({ error: "Failed to delete book" });
   }
 };
 
 module.exports = {
   addNewBook,
-  getAllBooksController,
-  getBookByIdController,
-  deleteBookController,
+  getAllBooks,
+  getBookById,
+  deleteBook,
 };

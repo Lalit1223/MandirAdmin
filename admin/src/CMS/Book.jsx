@@ -1,10 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const Book = () => {
-  const navigate = useNavigate();
-
   const [name, setName] = useState(""); // Book name
   const [image, setImage] = useState(null); // Cover image
   const [pdfFile, setPdfFile] = useState(null); // PDF file
@@ -51,7 +48,6 @@ const Book = () => {
       pdfFile: pdfBase64,
     };
 
-    console.log(payload);
     try {
       const response = await axios.post(
         "http://localhost:3000/api/books",
@@ -70,8 +66,6 @@ const Book = () => {
       setName("");
       setImage(null);
       setPdfFile(null);
-
-      navigate("/books");
     } catch (error) {
       console.error("Error adding book:", error);
       alert("Failed to add book. Please try again.");
