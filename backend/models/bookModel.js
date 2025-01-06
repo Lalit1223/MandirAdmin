@@ -26,10 +26,15 @@ const deleteBookById = async (id) => {
   const [result] = await db.query("DELETE FROM books WHERE id = ?", [id]);
   return result.affectedRows;
 };
+const getBooksCount = async () => {
+  const [rows] = await db.query("SELECT COUNT(*) AS count FROM books");
+  return rows[0].count;
+};
 
 module.exports = {
   addBook,
   getAllBooks,
   getBookById,
   deleteBookById,
+  getBooksCount,
 };

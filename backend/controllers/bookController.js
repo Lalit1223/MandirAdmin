@@ -39,9 +39,22 @@ const getAllBooks = async (req, res) => {
   }
 };
 
+const getBooksCount = async (req, res) => {
+  try {
+    const count = await bookModel.getBooksCount(); // Call the newly added function
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error("Error fetching books count:", error);
+    res.status(500).json({ error: "Failed to fetch books count." });
+  }
+};
+
 // Get book by ID
 const getBookById = async (req, res) => {
   const { id } = req.params;
+  if (isNaN(req.params.id)) {
+    return res.status(400).json({ error: "Invalid book ID" });
+  }
 
   try {
     const book = await bookModel.getBookById(id);
@@ -79,4 +92,5 @@ module.exports = {
   getAllBooks,
   getBookById,
   deleteBook,
+  getBooksCount,
 };

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Event from "./CMS/Event"; // Import Event form
 import Mandir from "./CMS/Mandir";
 import Book from "./CMS/Book";
@@ -15,11 +15,14 @@ import "./Home.css"; // Add custom styles here
 import Horoscope from "./CMS/Horoscope";
 import OfflineMandir from "./LIst/OfflineMandir";
 import { useNavigate } from "react-router-dom"; // Import the navigation hook
+import axios from "axios";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showModal, setShowModal] = useState(false);
   const [currentModal, setCurrentModal] = useState(""); // Track which modal to show
+  const [bookCount, setBookCount] = useState(0);
+
   const navigate = useNavigate(); // Hook for navigation
 
   const handleTabChange = (tab) => setActiveTab(tab);
@@ -28,6 +31,23 @@ const Home = () => {
     setCurrentModal(modalType);
     setShowModal(true);
   };
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/books/count"
+        );
+        setBookCount(response.data.count);
+      } catch (error) {
+        console.error("Error fetching book count:", error);
+        alert(
+          `Failed to fetch the count of books. Status: ${error.response?.status}, Message: ${error.message}`
+        );
+      }
+    };
+
+    fetchCount();
+  }, []);
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -74,27 +94,27 @@ const Home = () => {
             {[
               {
                 title: " Users",
-                value: `${UserCount}`,
+                value: `${bookCount}`,
                 icon: "bi bi-people icons",
               },
               {
                 title: " Mandir",
-                value: `${MandirCount}`,
+                value: `${bookCount}`,
                 icon: "bi bi-building icons",
               },
               {
                 title: " Events",
-                value: `${EventCount}`,
+                value: `${bookCount}`,
                 icon: "bi bi-calendar-event icons",
               },
               {
                 title: "Live Mandir",
-                value: `${liveCount}`,
+                value: `${bookCount}`,
                 icon: "bi bi-broadcast icons",
               },
               {
                 title: "Offline Mandir",
-                value: `${offlineCount}`,
+                value: `${bookCount}`,
                 icon: "bi bi-house icons",
               },
             ].map((item, index) => (

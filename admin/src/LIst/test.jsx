@@ -1,12 +1,31 @@
-// src/api.js
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-export const fetchBooks = async () => {
-  try {
-    const response = await axios.get("http://localhost:3000/api/books");
-    return response.data; // Return the data directly
-  } catch (error) {
-    console.error("Error fetching books:", error);
-    throw error; // Re-throw the error to handle it in the calling code
-  }
+const BookCount = () => {
+  const [bookCount, setBookCount] = useState(0);
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/books/count"
+        );
+        setBookCount(response.data.count);
+      } catch (error) {
+        console.error("Error fetching book count:", error);
+        alert("Failed to fetch the count of books.");
+      }
+    };
+
+    fetchCount();
+  }, []);
+
+  return (
+    <div className="container">
+      <h1>Total Books</h1>
+      <p>There are {bookCount} books in the database.</p>
+    </div>
+  );
 };
+
+export default BookCount;
