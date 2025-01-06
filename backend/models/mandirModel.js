@@ -32,6 +32,37 @@ const addMandir = async (mandirData) => {
   }
 };
 
+const getAllMandirs = async () => {
+  const query = `SELECT * FROM mandir`;
+
+  try {
+    const [rows] = await pool.query(query);
+    return rows.map((mandir) => ({
+      ...mandir,
+      images: JSON.parse(mandir.images), // Parse images JSON string
+    }));
+  } catch (err) {
+    throw new Error("Failed to fetch mandirs");
+  }
+};
+
+const getMandirById = async (mandirId) => {
+  const query = `SELECT * FROM mandir WHERE id = ?`;
+
+  try {
+    const [rows] = await pool.query(query, [mandirId]);
+    if (rows.length === 0) return null;
+
+    const mandir = rows[0];
+    return {
+      ...mandir,
+      images: JSON.parse(mandir.images), // Parse images JSON string
+    };
+  } catch (err) {
+    throw new Error("Failed to fetch mandir");
+  }
+};
+
 const updateMandir = async (mandirId, mandirData) => {
   const query = `
     UPDATE mandir SET
@@ -85,4 +116,10 @@ const deleteMandir = async (mandirId) => {
   }
 };
 
-module.exports = { addMandir, updateMandir, deleteMandir };
+module.exports = {
+  addMandir,
+  updateMandir,
+  deleteMandir,
+  getAllMandirs,
+  getMandirById,
+};

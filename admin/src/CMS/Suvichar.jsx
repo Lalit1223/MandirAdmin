@@ -1,43 +1,78 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const Suvichar = () => {
-  const navigate = useNavigate();
-  const [image, setImage] = useState(null); // State for image file
+  const [image, setImage] = useState(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // Convert file to base64
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    if (image) formData.append("image", image);
+    if (!image) {
+      alert("Please select an image to upload.");
+      return;
+    }
+
+    let imageBase64 = null;
+
+    // Convert image to base64
+    try {
+      imageBase64 = await fileToBase64(image);
+    } catch (err) {
+      console.error("Error converting image to base64:", err);
+      return;
+    }
+
+    // Prepare the payload
+    const payload = {
+      image: imageBase64,
+    };
 
     try {
-      const response = await axios.post("/api/suvichar", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axios.post(
+        "http://localhost:3000/api/suvichar",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      alert("Image uploaded successfully!");
-      console.log("Response:", response.data);
+      alert("Suvichar image uploaded successfully!");
 
-      // Reset form field
+      // Reset form fields
       setImage(null);
-
-      navigate("/suvichar");
+      setIsSubmitted(true);
     } catch (error) {
-      console.error("Error uploading image:", error);
+      console.error("Error uploading suvichar image:", error);
+      alert("Failed to upload the image. Please try again.");
     }
   };
 
+  if (isSubmitted) {
+    return (
+      <h4 className="text-center">Suvichar image uploaded successfully!</h4>
+    );
+  }
+
   return (
-    <div className="container">
-      <h2 className="text-center mb-4">Upload Image</h2>
+    <div className="container mt-5">
+      <h2 className="text-center mb-4">Upload Suvichar Image</h2>
       <form onSubmit={handleSubmit} className="shadow p-4 rounded bg-light">
         <div className="mb-3">
           <label htmlFor="image" className="form-label">
-            Upload Image
+            Select Image
           </label>
           <input
             type="file"
@@ -50,7 +85,7 @@ const Suvichar = () => {
         </div>
         <button
           type="submit"
-          className="btn  w-100"
+          className="btn w-100"
           style={{
             backgroundColor: "#ff5722",
             color: "#fff",
@@ -60,7 +95,7 @@ const Suvichar = () => {
             fontWeight: "bold",
           }}
         >
-          Upload
+          Upload Image
         </button>
       </form>
     </div>

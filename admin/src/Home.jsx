@@ -4,7 +4,7 @@ import Mandir from "./CMS/Mandir";
 import Book from "./CMS/Book";
 import Suvichar from "./CMS/Suvichar";
 import Navbar from "./Navbar";
-import MandirList, { mandirListData } from "./LIst/MandirList";
+import MandirList from "./LIst/MandirList";
 import BookList from "./LIst/BookList";
 import UserList, { userList } from "./LIst/UserList";
 import EventList, { eventList } from "./LIst/EventList";
@@ -54,14 +54,12 @@ const Home = () => {
 
   var EventCount = eventList.length;
   var UserCount = userList.length;
-  var MandirCount = mandirListData.length;
+  var MandirCount = userList.length;
 
-  const liveMandirs = mandirListData.filter(
-    (mandir) => mandir.status === "Live"
-  );
+  const liveMandirs = userList.filter((mandir) => mandir.status === "Live");
   var liveCount = liveMandirs.length;
 
-  const offlineMandirs = mandirListData.filter(
+  const offlineMandirs = userList.filter(
     (mandir) => mandir.status === "Offline"
   );
   var offlineCount = offlineMandirs.length;
@@ -106,11 +104,11 @@ const Home = () => {
                   style={{
                     borderRadius: "8px",
                     background: "linear-gradient(135deg, #ffffff, #f8f9fa)",
-                    padding: "10px", // Reduced padding
+                    padding: "15px", // Reduced padding
                     height: "auto", // Let the card height adjust based on content
                   }}
                 >
-                  <div className="card-body">
+                  <div className="card-body ">
                     <i
                       className={`${item.icon} text-primary mb-2`}
                       style={{ fontSize: "1.5rem" }} // Smaller icon size
@@ -304,7 +302,7 @@ const Home = () => {
             <ul className="nav flex-column">
               <li className="nav-item mb-3">
                 <button
-                  className={`btn btn-link text-start  w-100 ${
+                  className={`btn btn-link text-start side_text  w-100 ${
                     activeTab === "dashboard" ? "fw-bold  rounded" : ""
                   }`}
                   onClick={() => handleTabChange("dashboard")}

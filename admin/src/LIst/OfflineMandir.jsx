@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import MandirList, { mandirListData } from "./MandirList";
+import MandirList from "./MandirList";
+import { userList } from "./UserList";
 
-const offlineMandirs = mandirListData.filter(
-  (mandir) => mandir.status === "Offline"
-);
+const offlineMandirs = userList.filter((mandir) => mandir.status === "Offline");
 
 const OfflineMandir = () => {
   const [searchTerm, setSearchTerm] = useState("");

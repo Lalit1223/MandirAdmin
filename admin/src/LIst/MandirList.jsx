@@ -1,61 +1,50 @@
-import React, { useState } from "react";
-
-export const mandirListData = [
-  { id: 1, name: "Shri Ram Mandir", location: "Ayodhya", status: "Live" },
-  {
-    id: 2,
-    name: "Kashi Vishwanath Temple",
-    location: "Varanasi",
-    status: "Live",
-  },
-  { id: 3, name: "Jagannath Temple", location: "Puri", status: "Offline" },
-  {
-    id: 4,
-    name: "Vaishno Devi Temple",
-    location: "Jammu & Kashmir",
-    status: "Live",
-  },
-  { id: 5, name: "Meenakshi Temple", location: "Madurai", status: "Offline" },
-  { id: 6, name: "Somnath Temple", location: "Gujarat", status: "Live" },
-  {
-    id: 7,
-    name: "Tirupati Balaji Temple",
-    location: "Tirupati",
-    status: "Offline",
-  },
-];
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const MandirList = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [mandirList, setMandirList] = useState(mandirListData);
+  const [mandirList, setMandirList] = useState([]);
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-  // Search functionality
+  useEffect(() => {
+    axios
+      .get("http://localhost:3000/api/mandir")
+      .then((response) => {
+        console.log("API Response:", response.data);
+        setMandirList(response.data);
+      })
+      .catch((error) => console.error("Error fetching mandir data:", error));
+  }, []);
+
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  // Sort functionality
   const handleSort = () => {
     const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
     const sortedList = [...mandirList].sort((a, b) =>
       newSortOrder === "asc" ? a.id - b.id : b.id - a.id
     );
     setMandirList(sortedList);
-    setSortOrder(newSortOrder); // Update the sort order state
+    setSortOrder(newSortOrder);
   };
 
-  // Delete functionality
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this mandir?")) {
-      const updatedList = mandirList.filter((mandir) => mandir.id !== id);
-      setMandirList(updatedList);
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this Mandir?")) {
+      try {
+        await axios.delete(`http://localhost:3000/api/mandir/${id}`);
+        // Remove the deleted item from the state
+        setMandirList(mandirList.filter((mandir) => mandir.id !== id));
+        alert("Mandir deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting Mandir:", error);
+        alert("Failed to delete the Mandir. Please try again.");
+      }
     }
   };
 
-  // Pagination calculations
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = mandirList.slice(indexOfFirstItem, indexOfLastItem);
@@ -64,9 +53,11 @@ const MandirList = () => {
 
   const filteredMandirList = currentItems.filter(
     (mandir) =>
-      mandir.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mandir.location.toLowerCase().includes(searchTerm.toLowerCase())
+      mandir.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mandir.map_link?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  console.log("Filtered Mandir List:", filteredMandirList);
 
   return (
     <div className="container">
@@ -75,10 +66,7 @@ const MandirList = () => {
         <div>
           <button
             className="btn btn-sm me-2"
-            style={{
-              backgroundColor: "#ff5722", // Primary theme color
-              color: "#ffffff", // White text for contrast
-            }}
+            style={{ backgroundColor: "#ff5722", color: "#ffffff" }}
             onClick={() => alert("Redirect to Add Mandir Modal")}
           >
             <i className="bi bi-plus-circle"></i> Add Mandir
@@ -119,8 +107,17 @@ const MandirList = () => {
             {filteredMandirList.map((mandir) => (
               <tr key={mandir.id}>
                 <td className="fw-bold">{mandir.id}</td>
-                <td>{mandir.name}</td>
-                <td>{mandir.location}</td>
+                <td>{mandir.title}</td>
+                <td>
+                  <a
+                    href={mandir.map_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View Map
+                  </a>
+                </td>
+                {/* mandir status */}
                 <td>
                   <span
                     className={`badge ${
@@ -156,14 +153,10 @@ const MandirList = () => {
           </tbody>
         </table>
       </div>
-      {/* Pagination Controls */}
       <div className="d-flex justify-content-between align-items-center mt-3">
         <button
-          className="btn  btn-sm"
-          style={{
-            backgroundColor: "#ff5722", // Primary theme color
-            color: "#ffffff", // White text for contrast
-          }}
+          className="btn btn-sm"
+          style={{ backgroundColor: "#ff5722", color: "#ffffff" }}
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
         >
@@ -173,11 +166,8 @@ const MandirList = () => {
           Page {currentPage} of {totalPages}
         </span>
         <button
-          className="btn  btn-sm"
-          style={{
-            backgroundColor: "#ff5722", // Primary theme color
-            color: "#ffffff", // White text for contrast
-          }}
+          className="btn btn-sm"
+          style={{ backgroundColor: "#ff5722", color: "#ffffff" }}
           onClick={() =>
             setCurrentPage((prev) => Math.min(prev + 1, totalPages))
           }

@@ -1,17 +1,26 @@
 const express = require("express");
-
 const router = express.Router();
 const {
   addMandir,
   updateMandir,
   deleteMandir,
+  getAllMandirs,
+  getMandirById,
 } = require("../controllers/mandirController");
 
-// Route to add Mandir with image upload
-router.post("/", addMandir); // Accepts up to 5 images
+// Route to get all Mandirs
+router.get("/", getAllMandirs);
 
-// Route to update Mandir with image upload
+// Route to get a Mandir by ID
+router.get("/:id", getMandirById);
+
+// Route to add Mandir
+router.post("/", addMandir);
+
+// Route to update Mandir
 router.put("/:id", updateMandir);
-router.delete("/:id", deleteMandir); // Delete a Mandir by ID
+
+// Route to delete Mandir
+router.delete("/:id", deleteMandir);
 
 module.exports = router;

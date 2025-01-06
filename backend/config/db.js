@@ -69,11 +69,25 @@ const createBookTable = async () => {
   }
 };
 
+const createSuvicharTable = async () => {
+  const query = `
+CREATE TABLE IF NOT EXISTS suvichar (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    image_path VARCHAR(255) NOT NULL
+); `;
+  try {
+    await pool.promise().query(query);
+  } catch (err) {
+    console.error("Error creating suvichar table:", err);
+  }
+};
+
 // Add to the initialization block
 (async () => {
   await createMandirTable();
   await createEventTable();
   await createBookTable(); // Call the book table creation function
+  await createSuvicharTable();
 })();
 // Export the pool for querying the database
 module.exports = pool.promise();

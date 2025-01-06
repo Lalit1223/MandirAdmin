@@ -110,6 +110,32 @@ const updateMandir = async (req, res) => {
     res.status(500).json({ error: "Failed to update mandir." });
   }
 };
+
+const getAllMandirs = async (req, res) => {
+  try {
+    const mandirs = await mandirModel.getAllMandirs();
+    res.status(200).json(mandirs);
+  } catch (err) {
+    console.error("Error fetching mandirs:", err);
+    res.status(500).json({ error: "Failed to fetch mandirs." });
+  }
+};
+
+const getMandirById = async (req, res) => {
+  const mandirId = req.params.id;
+
+  try {
+    const mandir = await mandirModel.getMandirById(mandirId);
+    if (!mandir) {
+      return res.status(404).json({ error: "Mandir not found." });
+    }
+    res.status(200).json(mandir);
+  } catch (err) {
+    console.error("Error fetching mandir:", err);
+    res.status(500).json({ error: "Failed to fetch mandir." });
+  }
+};
+
 const deleteMandir = async (req, res) => {
   const mandirId = req.params.id;
 
@@ -127,4 +153,10 @@ const deleteMandir = async (req, res) => {
   }
 };
 
-module.exports = { addMandir, updateMandir, deleteMandir };
+module.exports = {
+  addMandir,
+  updateMandir,
+  deleteMandir,
+  getAllMandirs,
+  getMandirById,
+};

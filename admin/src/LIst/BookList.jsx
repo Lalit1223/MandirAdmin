@@ -1,43 +1,55 @@
-import React, { useState } from "react";
-
-const initialBookList = [
-  { id: 1, title: "Bhagavad Gita", author: "Vyasa", pages: 700 },
-  { id: 2, title: "Ramayana", author: "Valmiki", pages: 2400 },
-  { id: 3, title: "Mahabharata", author: "Vyasa", pages: 7500 },
-  { id: 4, title: "Upanishads", author: "Various", pages: 1080 },
-  { id: 5, title: "Arthashastra", author: "Chanakya", pages: 500 },
-  { id: 6, title: "Yoga Sutras", author: "Patanjali", pages: 195 },
-];
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const BookList = () => {
-  const [books, setBooks] = useState(initialBookList); // Manage book list
+  const [books, setBooks] = useState([]); // Dynamic book list
   const [searchTerm, setSearchTerm] = useState(""); // Search functionality
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortOrder, setSortOrder] = useState("asc"); // Sorting order
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
   const itemsPerPage = 4; // Number of items per page
 
+  // Fetch books from the database
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/books");
+        console.log(response.data); // Debugging line
+
+        setBooks(response.data);
+      } catch (error) {
+        console.error("Error fetching books:", error);
+        alert("Failed to fetch books from the server.");
+      }
+    };
+
+    fetchBooks();
+  }, []);
+
   // Delete a book by ID
-  const handleDelete = (id) => {
-    setBooks(books.filter((book) => book.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/books/${id}`);
+      setBooks(books.filter((book) => book.id !== id));
+      alert("Book deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting book:", error);
+      alert("Failed to delete the book.");
+    }
   };
 
   // Sort books by ID
-
-  // Sort functionality
   const handleSort = () => {
     const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
     const sortedList = [...books].sort((a, b) =>
       newSortOrder === "asc" ? a.id - b.id : b.id - a.id
     );
     setBooks(sortedList);
-    setSortOrder(newSortOrder); // Update the sort order state
+    setSortOrder(newSortOrder);
   };
 
   // Filter books based on search term
-  const filteredBooks = books.filter(
-    (book) =>
-      book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.author.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredBooks = books.filter((book) =>
+    book.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Calculate pagination
@@ -48,28 +60,11 @@ const BookList = () => {
     startIndex + itemsPerPage
   );
 
-  // Handle page change
-  const changePage = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
   return (
     <div className="container">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h3 className="text-primary">Book List</h3>
         <div>
-          <button
-            className="btn btn-sm me-2"
-            style={{
-              backgroundColor: "#ff5722", // Primary theme color
-              color: "#ffffff", // White text for contrast
-            }}
-            onClick={() => alert("Redirect to Add Book Modal")}
-          >
-            <i className="bi bi-plus-circle"></i> Add Book
-          </button>
           <input
             type="text"
             className="form-control me-2"
@@ -98,8 +93,8 @@ const BookList = () => {
                 ></i>
               </th>
               <th>Title</th>
-              <th>Author</th>
-              <th>Pages</th>
+              <th>Cover Image</th>
+              <th>PDF</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -107,9 +102,31 @@ const BookList = () => {
             {currentBooks.map((book) => (
               <tr key={book.id}>
                 <td>{book.id}</td>
-                <td>{book.title}</td>
-                <td>{book.author}</td>
-                <td>{book.pages}</td>
+                <td>{book.name}</td>
+                <td>
+                  {book.coverImagePath ? (
+                    <img
+                      src={`http://localhost:3000${book.coverImagePath}`}
+                      alt={book.name}
+                      style={{ width: "50px", height: "50px" }}
+                    />
+                  ) : (
+                    "No Image"
+                  )}
+                </td>
+                <td>
+                  {book.pdfFilePath ? (
+                    <a
+                      href={`http://localhost:3000${book.pdfFilePath}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View PDF
+                    </a>
+                  ) : (
+                    "No PDF"
+                  )}
+                </td>
                 <td>
                   <button
                     className="btn btn-danger btn-sm"
@@ -126,10 +143,10 @@ const BookList = () => {
 
       <div className="d-flex justify-content-between align-items-center">
         <button
-          className="btn  btn-sm"
+          className="btn btn-sm"
           style={{
-            backgroundColor: "#ff5722", // Primary theme color
-            color: "#ffffff", // White text for contrast
+            backgroundColor: "#ff5722",
+            color: "#ffffff",
           }}
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
@@ -140,10 +157,10 @@ const BookList = () => {
           Page {currentPage} of {totalPages}
         </span>
         <button
-          className="btn  btn-sm"
+          className="btn btn-sm"
           style={{
-            backgroundColor: "#ff5722", // Primary theme color
-            color: "#ffffff", // White text for contrast
+            backgroundColor: "#ff5722",
+            color: "#ffffff",
           }}
           onClick={() =>
             setCurrentPage((prev) => Math.min(prev + 1, totalPages))

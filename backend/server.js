@@ -7,6 +7,7 @@ const adminRoutes = require("./routes/adminRoutes");
 const mandirRoutes = require("./routes/mandirRoutes"); // Add Mandir routes
 const eventRoutes = require("./routes/eventRoutes");
 const bookRoutes = require("./routes/bookRoutes");
+const suvicharRoutes = require("./routes/suvicharRoutes");
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/mandir", mandirRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/books", bookRoutes);
+app.use("/api/suvichar", suvicharRoutes); // Add suvichar routes
 
 // Start server
 const PORT = process.env.PORT || 3000;

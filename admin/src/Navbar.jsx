@@ -18,7 +18,7 @@ const Navbar = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <div className="container-fluid">
-        <Link className="navbar-brand" to="/">
+        <Link className="navbar-brand" to="/" style={{ fontSize: "1.5rem" }}>
           <img
             src="https://cdn.pixabay.com/photo/2016/07/23/16/19/symbol-1537054_1280.png"
             alt="Logo"
@@ -31,7 +31,7 @@ const Navbar = () => {
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
               <button
-                className="btn btn-sm me-4"
+                className="btn  me-4"
                 style={{ backgroundColor: "#ff5722", color: "#fff" }}
                 onClick={handleLogout}
               >
