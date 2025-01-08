@@ -17,6 +17,7 @@ const addMandir = async (req, res) => {
     aarti_time_night,
     map_link,
     images, // expecting base64 images
+    status = 0, // Default to 0
   } = req.body;
 
   let imageUrls = [];
@@ -98,6 +99,7 @@ const updateMandir = async (req, res) => {
       aarti_time_night,
       map_link,
       images: imageUrls,
+      status,
     });
 
     if (!updated) {
@@ -153,10 +155,43 @@ const deleteMandir = async (req, res) => {
   }
 };
 
+const updateMandirStatus = async (req, res) => {
+  const mandirId = req.params.id;
+  const { status } = req.body;
+
+  if (typeof status !== "number") {
+    return res.status(400).json({ error: "Invalid status value" });
+  }
+
+  try {
+    const updated = await mandirModel.updateMandirStatus(mandirId, status);
+
+    if (!updated) {
+      return res.status(404).json({ error: "Mandir not found" });
+    }
+
+    res.status(200).json({ message: "Mandir status updated successfully" });
+  } catch (err) {
+    console.error("Error updating mandir status:", err);
+    res.status(500).json({ error: "Failed to update mandir status" });
+  }
+};
+
+const getMandirCount = async (req, res) => {
+  try {
+    const count = await mandirModel.getMandirCount(); // Call the newly added function
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error("Error fetching Mandir count:", error);
+    res.status(500).json({ error: "Failed to fetch Mandir count." });
+  }
+};
 module.exports = {
   addMandir,
   updateMandir,
   deleteMandir,
   getAllMandirs,
   getMandirById,
+  updateMandirStatus,
+  getMandirCount,
 };

@@ -95,10 +95,15 @@ const getEventById = async (eventId) => {
   }
 };
 
+const getEventsCount = async () => {
+  const [rows] = await pool.query("SELECT COUNT(*) AS count FROM events");
+  return rows[0].count;
+};
 module.exports = {
   addEvent,
   updateEvent,
   deleteEvent,
   getAllEvents,
   getEventById,
+  getEventsCount,
 };

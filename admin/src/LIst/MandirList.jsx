@@ -6,13 +6,12 @@ const MandirList = () => {
   const [mandirList, setMandirList] = useState([]);
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4;
+  const itemsPerPage = 10;
 
   useEffect(() => {
     axios
       .get("http://localhost:3000/api/mandir")
       .then((response) => {
-        console.log("API Response:", response.data);
         setMandirList(response.data);
       })
       .catch((error) => console.error("Error fetching mandir data:", error));
@@ -35,13 +34,32 @@ const MandirList = () => {
     if (window.confirm("Are you sure you want to delete this Mandir?")) {
       try {
         await axios.delete(`http://localhost:3000/api/mandir/${id}`);
-        // Remove the deleted item from the state
         setMandirList(mandirList.filter((mandir) => mandir.id !== id));
         alert("Mandir deleted successfully!");
       } catch (error) {
         console.error("Error deleting Mandir:", error);
         alert("Failed to delete the Mandir. Please try again.");
       }
+    }
+  };
+
+  const toggleStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === 1 ? 0 : 1;
+
+    try {
+      await axios.patch(`http://localhost:3000/api/mandir/${id}/status`, {
+        status: newStatus,
+      });
+
+      setMandirList((prevList) =>
+        prevList.map((mandir) =>
+          mandir.id === id ? { ...mandir, status: newStatus } : mandir
+        )
+      );
+      alert("Status updated successfully");
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Failed to update status");
     }
   };
 
@@ -57,11 +75,9 @@ const MandirList = () => {
       mandir.map_link?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  console.log("Filtered Mandir List:", filteredMandirList);
-
   return (
     <div className="container">
-      <div className="d-flex justify-content-between align-items-center mb-2">
+      <div className="d-flex justify-content-between align-items-center mb-3">
         <h3 className="text-primary">Mandir List</h3>
         <div>
           <button
@@ -117,24 +133,33 @@ const MandirList = () => {
                     View Map
                   </a>
                 </td>
-                {/* mandir status */}
-                <td>
+                <td className="d-flex flex-column align-items-center">
                   <span
                     className={`badge ${
-                      mandir.status === "Live" ? "bg-success" : "bg-secondary"
+                      mandir.status === 1 ? "bg-success" : "bg-secondary"
                     }`}
                     style={{
-                      padding: "0.5rem 1rem",
                       fontSize: "0.9rem",
                       borderRadius: "10px",
+                      marginBottom: "5px",
                     }}
                   >
-                    {mandir.status}
+                    {mandir.status === 1 ? "Live" : "Offline"}
                   </span>
+
+                  <label className="switch">
+                    <input
+                      type="checkbox"
+                      checked={mandir.status === 1}
+                      onChange={() => toggleStatus(mandir.id, mandir.status)}
+                    />
+                    <span className="slider round"></span>
+                  </label>
                 </td>
+
                 <td>
                   <button
-                    className="btn btn-warning btn-sm me-2"
+                    className="btn btn-warning btn-sm m-2"
                     onClick={() =>
                       alert(`Edit functionality for Mandir ID: ${mandir.id}`)
                     }
@@ -175,6 +200,11 @@ const MandirList = () => {
         >
           Next
         </button>
+      </div>
+      <div className="mt-3  ">
+        <span>
+          Showing {filteredMandirList.length} of {mandirList.length} records
+        </span>
       </div>
     </div>
   );

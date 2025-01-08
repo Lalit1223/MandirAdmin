@@ -6,8 +6,8 @@ import Suvichar from "./CMS/Suvichar";
 import Navbar from "./Navbar";
 import MandirList from "./LIst/MandirList";
 import BookList from "./LIst/BookList";
-import UserList, { userList } from "./LIst/UserList";
-import EventList, { eventList } from "./LIst/EventList";
+import UserList from "./LIst/UserList";
+import EventList from "./LIst/EventList";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -21,7 +21,14 @@ const Home = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showModal, setShowModal] = useState(false);
   const [currentModal, setCurrentModal] = useState(""); // Track which modal to show
-  const [bookCount, setBookCount] = useState(0);
+  const [userCount, setUserCount] = useState(0);
+  const [mandirCount, setMandirCount] = useState(0);
+  const [offlineMandirCount, setOfflineMandirCount] = useState(0);
+  const [liveMandirCount, setLiveMandirCount] = useState(0);
+
+  const [eventCount, setEventCount] = useState(0);
+
+  const [events, setEvents] = useState([]);
 
   const navigate = useNavigate(); // Hook for navigation
 
@@ -34,20 +41,78 @@ const Home = () => {
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:3000/api/books/count"
+        const userResponse = await axios.get(
+          "http://localhost:3000/api/users/count"
         );
-        setBookCount(response.data.count);
+        setUserCount(userResponse.data.count);
       } catch (error) {
-        console.error("Error fetching book count:", error);
-        alert(
-          `Failed to fetch the count of books. Status: ${error.response?.status}, Message: ${error.message}`
+        console.error("Error fetching user count:", error);
+      }
+
+      try {
+        const mandirResponse = await axios.get(
+          "http://localhost:3000/api/mandir"
         );
+        const mandirs = mandirResponse.data; // Assuming this returns an array of mandirs
+        const totalMandirCount = mandirs.length;
+        const offlineMandirCount = mandirs.filter(
+          (mandir) => mandir.status === 0
+        ).length;
+
+        const liveMandirCount = mandirs.filter(
+          (mandir) => mandir.status === 1
+        ).length;
+
+        setMandirCount(totalMandirCount);
+        setOfflineMandirCount(offlineMandirCount);
+        setLiveMandirCount(liveMandirCount);
+      } catch (error) {
+        console.error("Error fetching Mandir data:", error);
+      }
+
+      try {
+        const eventResponse = await axios.get(
+          "http://localhost:3000/api/events/count"
+        );
+        setEventCount(eventResponse.data.count);
+      } catch (error) {
+        console.error("Error fetching event count:", error);
       }
     };
 
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/events");
+        setEvents(response.data);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+
+    fetchEvents();
     fetchCount();
   }, []);
+  const calendarEvents = events.map((event) => {
+    const startDateTime = event.time
+      ? new Date(`${event.date.split("T")[0]}T${event.time}`) // Combine date and time
+      : new Date(event.date); // Default to just the date
+
+    const endDateTime = event.time
+      ? new Date(
+          new Date(`${event.date.split("T")[0]}T${event.time}`).getTime() +
+            60 * 60 * 1000
+        ) // Default 1-hour duration
+      : new Date(event.date); // Default end as the same date
+
+    return {
+      title: event.title,
+      start: startDateTime,
+      end: endDateTime,
+      description: event.description,
+      location: event.location,
+      link: event.link,
+    };
+  });
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -65,24 +130,12 @@ const Home = () => {
     navigate("/");
   };
 
-  const events = eventList.map((event) => ({
-    title: event.name,
-    start: new Date(event.date),
-    end: new Date(event.date), // Single-day events
-    category: event.category || "default", // Assuming events have a category
-  }));
-
-  var EventCount = eventList.length;
-  var UserCount = userList.length;
-  var MandirCount = userList.length;
-
-  const liveMandirs = userList.filter((mandir) => mandir.status === "Live");
-  var liveCount = liveMandirs.length;
-
-  const offlineMandirs = userList.filter(
-    (mandir) => mandir.status === "Offline"
-  );
-  var offlineCount = offlineMandirs.length;
+  // const events = eventList.map((event) => ({
+  //   title: event.name,
+  //   start: new Date(event.date),
+  //   end: new Date(event.date), // Single-day events
+  //   category: event.category || "default", // Assuming events have a category
+  // }));
 
   const localizer = momentLocalizer(moment);
 
@@ -94,27 +147,27 @@ const Home = () => {
             {[
               {
                 title: " Users",
-                value: `${bookCount}`,
+                value: `${userCount}`,
                 icon: "bi bi-people icons",
               },
               {
                 title: " Mandir",
-                value: `${bookCount}`,
+                value: `${mandirCount}`,
                 icon: "bi bi-building icons",
               },
               {
                 title: " Events",
-                value: `${bookCount}`,
+                value: `${eventCount}`,
                 icon: "bi bi-calendar-event icons",
               },
               {
                 title: "Live Mandir",
-                value: `${bookCount}`,
+                value: `${liveMandirCount}`,
                 icon: "bi bi-broadcast icons",
               },
               {
                 title: "Offline Mandir",
-                value: `${bookCount}`,
+                value: `${offlineMandirCount}`,
                 icon: "bi bi-house icons",
               },
             ].map((item, index) => (
@@ -162,36 +215,28 @@ const Home = () => {
                   >
                     <Calendar
                       localizer={localizer}
-                      events={events}
+                      events={calendarEvents}
                       startAccessor="start"
                       endAccessor="end"
                       style={{
                         height: "100%",
-                        borderRadius: "10px", // Smooth corners for the calendar itself
-                        fontFamily: "'Arial', sans-serif", // Clean font for readability
+                        borderRadius: "10px",
+                        fontFamily: "'Arial', sans-serif",
                       }}
+                      eventPropGetter={() => ({
+                        style: {
+                          backgroundColor: "#ff5722", // Green background for all events
+                          color: "#ffffff", // White text
+                          borderRadius: "5px", // Rounded corners
+                        },
+                      })}
                       components={{
-                        event: ({ event }) => (
-                          <span
-                            style={{
-                              backgroundColor: "#ffb74d",
-                              padding: "5px",
-                              borderRadius: "5px",
-                              color: "#fff",
-                              display: "block",
-                              fontWeight: "bold",
-                              fontSize: "0.9rem",
-                            }}
-                          >
-                            {event.title}
-                          </span>
-                        ),
                         toolbar: () => (
                           <div
                             style={{
                               background:
-                                "linear-gradient(120deg, #ff5722 ,rgb(236, 186, 128))", // Colorful gradient for header
-                              color: "#fff", // White text color in header
+                                "linear-gradient(120deg, #ff5722, #ecba80)",
+                              color: "#fff",
                               padding: "10px",
                               textAlign: "center",
                               fontWeight: "bold",

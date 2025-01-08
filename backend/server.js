@@ -8,6 +8,7 @@ const mandirRoutes = require("./routes/mandirRoutes"); // Add Mandir routes
 const eventRoutes = require("./routes/eventRoutes");
 const bookRoutes = require("./routes/bookRoutes");
 const suvicharRoutes = require("./routes/suvicharRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
@@ -15,7 +16,7 @@ const app = express();
 app.use(
   cors({
     origin: "http://localhost:5173", // Only allow requests from your React frontend
-    methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed methods
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // Specify allowed methods
     credentials: true, // Allow credentials (cookies, headers, etc.)
   })
 );
@@ -33,6 +34,7 @@ app.use("/api/mandir", mandirRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/api/suvichar", suvicharRoutes); // Add suvichar routes
+app.use("/api/users", userRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;

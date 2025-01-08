@@ -106,10 +106,21 @@ const getEventDetails = async (req, res) => {
   }
 };
 
+const getEventsCount = async (req, res) => {
+  try {
+    const count = await eventModel.getEventsCount(); // Call the newly added function
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error("Error fetching event count:", error);
+    res.status(500).json({ error: "Failed to fetch event count." });
+  }
+};
+
 module.exports = {
   addNewEvent,
   updateExistingEvent,
   deleteEventById,
   getAllEventsList,
   getEventDetails,
+  getEventsCount,
 };

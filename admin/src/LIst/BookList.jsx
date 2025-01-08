@@ -6,7 +6,7 @@ const BookList = () => {
   const [searchTerm, setSearchTerm] = useState(""); // Search functionality
   const [sortOrder, setSortOrder] = useState("asc"); // Sorting order
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
-  const itemsPerPage = 4; // Number of items per page
+  const itemsPerPage = 10; // Number of items per page
 
   // Fetch books from the database
   useEffect(() => {
@@ -101,7 +101,7 @@ const BookList = () => {
           <tbody>
             {currentBooks.map((book) => (
               <tr key={book.id}>
-                <td>{book.id}</td>
+                <td className="fw-bold">{book.id}</td>
                 <td>{book.name}</td>
                 <td>
                   {book.coverImagePath ? (
@@ -169,6 +169,11 @@ const BookList = () => {
         >
           Next
         </button>
+      </div>
+      <div className="mt-3  ">
+        <span>
+          Showing {currentBooks.length} of {filteredBooks.length} records
+        </span>
       </div>
     </div>
   );

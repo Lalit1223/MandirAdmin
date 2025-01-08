@@ -23,7 +23,8 @@ const createMandirTable = async () => {
       aarti_time_evening TIME,
       aarti_time_night TIME,
       map_link VARCHAR(255),
-      images TEXT  -- This column will store the base64 image data or URLs as JSON string
+      images TEXT,  -- This column will store the base64 image data or URLs as JSON string
+      status TINYINT DEFAULT 0
 
     );
   `;

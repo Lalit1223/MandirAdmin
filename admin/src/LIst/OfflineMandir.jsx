@@ -1,15 +1,29 @@
-import React, { useState } from "react";
-import MandirList from "./MandirList";
-import { userList } from "./UserList";
-
-const offlineMandirs = userList.filter((mandir) => mandir.status === "Offline");
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const OfflineMandir = () => {
+  const [mandirList, setMandirList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [mandirList, setMandirList] = useState(offlineMandirs);
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4;
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    // Fetch only offline mandirs (status = 0)
+    const fetchOfflineMandirs = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/mandir");
+        const offlineMandirs = response.data.filter(
+          (mandir) => mandir.status === 0
+        );
+        setMandirList(offlineMandirs);
+      } catch (error) {
+        console.error("Error fetching offline mandirs:", error);
+      }
+    };
+
+    fetchOfflineMandirs();
+  }, []);
 
   // Search functionality
   const handleSearch = (event) => {
@@ -23,35 +37,32 @@ const OfflineMandir = () => {
       newSortOrder === "asc" ? a.id - b.id : b.id - a.id
     );
     setMandirList(sortedList);
-    setSortOrder(newSortOrder); // Update the sort order state
+    setSortOrder(newSortOrder);
   };
+
+  // Filter mandirs based on search term
+  const filteredMandirList = mandirList.filter(
+    (mandir) =>
+      (mandir.title &&
+        mandir.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (mandir.map_link &&
+        mandir.map_link.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   // Pagination calculations
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = mandirList.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(mandirList.length / itemsPerPage);
-
-  const filteredMandirList = currentItems.filter(
-    (mandir) =>
-      mandir.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mandir.location.toLowerCase().includes(searchTerm.toLowerCase())
+  const currentItems = filteredMandirList.slice(
+    indexOfFirstItem,
+    indexOfLastItem
   );
+  const totalPages = Math.ceil(filteredMandirList.length / itemsPerPage);
+
   return (
     <div className="container">
       <div className="d-flex justify-content-between align-items-center mb-2">
-        <h3 className="text-primary">Mandir List</h3>
+        <h3 className="text-primary">Offline Mandir List</h3>
         <div>
-          <button
-            className="btn btn-sm me-2"
-            style={{
-              backgroundColor: "#ff5722", // Primary theme color
-              color: "#ffffff", // White text for contrast
-            }}
-            onClick={() => alert("Redirect to Add Mandir Modal")}
-          >
-            <i className="bi bi-plus-circle"></i> Add Mandir
-          </button>
           <div className="input-group">
             <input
               type="text"
@@ -66,6 +77,8 @@ const OfflineMandir = () => {
           </div>
         </div>
       </div>
+
+      {/* Table for displaying mandirs */}
       <div className="table-responsive">
         <table className="table table-hover shadow-sm rounded">
           <thead
@@ -79,20 +92,37 @@ const OfflineMandir = () => {
                 # {sortOrder === "asc" ? "↑" : "↓"}
               </th>
               <th>Name</th>
-              <th>Location</th>]
+              <th>Location</th>
             </tr>
           </thead>
           <tbody>
-            {filteredMandirList.map((mandir) => (
-              <tr key={mandir.id}>
-                <td className="fw-bold">{mandir.id}</td>
-                <td>{mandir.name}</td>
-                <td>{mandir.location}</td>
+            {currentItems.length > 0 ? (
+              currentItems.map((mandir) => (
+                <tr key={mandir.id}>
+                  <td className="fw-bold">{mandir.id}</td>
+                  <td>{mandir.title}</td>
+                  <td>
+                    <a
+                      href={mandir.map_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View Map
+                    </a>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="3" className="text-center">
+                  No Offline Mandirs Found
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
+
       {/* Pagination Controls */}
       <div className="d-flex justify-content-between align-items-center mt-3">
         <button
@@ -123,7 +153,15 @@ const OfflineMandir = () => {
           Next
         </button>
       </div>
+
+      {/* Showing records info */}
+      <div className="mt-3">
+        <span>
+          Showing {currentItems.length} of {filteredMandirList.length} records
+        </span>
+      </div>
     </div>
   );
 };
+
 export default OfflineMandir;

@@ -1,32 +1,36 @@
-import React, { useState } from "react";
-
-// Exporting the event list as a named export
-export const eventList = [
-  {
-    id: 1,
-    name: "Diwali Celebration",
-    date: "2024-11-12",
-    location: "Ayodhya",
-  },
-  { id: 2, name: "Chhath Puja", date: "2024-11-19", location: "Patna" },
-  { id: 3, name: "Maha Aarti", date: "2024-12-10", location: "Haridwar" },
-  { id: 4, name: "Hare krishna", date: "2024-12-24", location: "Vrindavan" },
-
-  { id: 5, name: "Kumbh Mela", date: "2025-01-14", location: "Haridwar" },
-  { id: 6, name: "Janmashtami", date: "2024-08-26", location: "Mathura" },
-  { id: 7, name: "Holi Festival", date: "2025-03-24", location: "Vrindavan" },
-];
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const EventList = () => {
-  const [events, setEvents] = useState(eventList); // Manage event list
+  const [events, setEvents] = useState([]); // Manage event list
   const [searchTerm, setSearchTerm] = useState(""); // Search functionality
-  const [sortOrder, setSortOrder] = useState(true); // Sort toggle
+  const [sortOrder, setSortOrder] = useState("asc"); // Sort toggle
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
-  const itemsPerPage = 4; // Number of items per page
+  const itemsPerPage = 10; // Number of items per page
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/events"); // Fetch events from backend
+        setEvents(response.data); // Set the event data into state
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+
+    fetchEvents();
+  }, []);
 
   // Delete an event by ID
-  const handleDelete = (id) => {
-    setEvents(events.filter((event) => event.id !== id));
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this Mandir?")) {
+      try {
+        await axios.delete(`http://localhost:3000/api/events/${id}`);
+        setEvents(events.filter((event) => event.id !== id)); // Remove deleted event from state
+      } catch (error) {
+        console.error("Error deleting event:", error);
+      }
+    }
   };
 
   // Sort events by ID
@@ -39,10 +43,20 @@ const EventList = () => {
     setSortOrder(newSortOrder); // Update the sort order state
   };
 
+  const formatDate = (date) => {
+    const eventDate = new Date(date);
+    const day = eventDate.getDate(); // Get the day of the month
+    const month = eventDate.getMonth() + 1; // Get the month (0-based index, so we add 1)
+    const year = eventDate.getFullYear(); // Get the full year
+
+    // Return the formatted string as 'DD-MM-YYYY'
+    return `${day}-${month}-${year}`;
+  };
+
   // Filter events based on search term
   const filteredEvents = events.filter(
     (event) =>
-      event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -107,9 +121,9 @@ const EventList = () => {
           <tbody>
             {currentEvents.map((event) => (
               <tr key={event.id}>
-                <td>{event.id}</td>
-                <td>{event.name}</td>
-                <td>{event.date}</td>
+                <td className="fw-bold">{event.id}</td>
+                <td>{event.title}</td>
+                <td>{formatDate(event.date)}</td> {/* Format the date here */}
                 <td>{event.location}</td>
                 <td>
                   <button
@@ -127,7 +141,7 @@ const EventList = () => {
 
       <div className="d-flex justify-content-between align-items-center">
         <button
-          className="btn  btn-sm"
+          className="btn btn-sm"
           style={{
             backgroundColor: "#ff5722", // Primary theme color
             color: "#ffffff", // White text for contrast
@@ -141,7 +155,7 @@ const EventList = () => {
           Page {currentPage} of {totalPages}
         </span>
         <button
-          className="btn  btn-sm"
+          className="btn btn-sm"
           style={{
             backgroundColor: "#ff5722", // Primary theme color
             color: "#ffffff", // White text for contrast
@@ -153,6 +167,11 @@ const EventList = () => {
         >
           Next
         </button>
+      </div>
+      <div className="mt-3  ">
+        <span>
+          Showing {currentEvents.length} of {filteredEvents.length} records
+        </span>
       </div>
     </div>
   );

@@ -5,8 +5,8 @@ const addMandir = async (mandirData) => {
     INSERT INTO mandir (
       title, nickname, description, youtube_live_link,
       offline_video_morning, offline_video_evening, offline_video_night,
-      aarti_time_morning, aarti_time_evening, aarti_time_night, map_link, images
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      aarti_time_morning, aarti_time_evening, aarti_time_night, map_link, images,status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
   `;
 
   const values = [
@@ -22,6 +22,7 @@ const addMandir = async (mandirData) => {
     mandirData.aarti_time_night,
     mandirData.map_link,
     JSON.stringify(mandirData.images), // Store image URLs as a JSON string
+    mandirData.status || 0, // Default to 0 if not provided
   ];
 
   try {
@@ -77,7 +78,9 @@ const updateMandir = async (mandirId, mandirData) => {
       aarti_time_morning = ?, 
       aarti_time_evening = ?, 
       aarti_time_night = ?, 
-      map_link = ?
+      map_link = ?,
+      status = ?
+
     WHERE id = ?
   `;
 
@@ -94,6 +97,7 @@ const updateMandir = async (mandirId, mandirData) => {
     mandirData.aarti_time_evening,
     mandirData.aarti_time_night,
     mandirData.map_link,
+    mandirData.status,
     mandirId,
   ];
 
@@ -116,10 +120,27 @@ const deleteMandir = async (mandirId) => {
   }
 };
 
+const updateMandirStatus = async (mandirId, status) => {
+  const query = `UPDATE mandir SET status = ? WHERE id = ?`;
+
+  try {
+    const [result] = await pool.query(query, [status, mandirId]);
+    return result.affectedRows;
+  } catch (err) {
+    throw new Error("Failed to update mandir status");
+  }
+};
+
+const getMandirCount = async () => {
+  const [rows] = await pool.query("SELECT COUNT(*) AS count FROM mandir");
+  return rows[0].count;
+};
 module.exports = {
   addMandir,
   updateMandir,
   deleteMandir,
   getAllMandirs,
   getMandirById,
+  updateMandirStatus,
+  getMandirCount,
 };
