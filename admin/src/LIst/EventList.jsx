@@ -23,7 +23,7 @@ const EventList = () => {
 
   // Delete an event by ID
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this Mandir?")) {
+    if (window.confirm("Are you sure you want to delete this Event?")) {
       try {
         await axios.delete(`http://localhost:3000/api/events/${id}`);
         setEvents(events.filter((event) => event.id !== id)); // Remove deleted event from state

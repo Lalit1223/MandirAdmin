@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "animate.css/animate.min.css"; // For animations
 import EventList from "../LIst/EventList";
+import "./FormStyles.css"; // Common form styling
 
 const Event = () => {
   const navigate = useNavigate();
@@ -61,16 +62,18 @@ const Event = () => {
       alert("Failed to add the event. Please try again.");
     }
   };
+
   if (isSubmitted) {
     return <EventList />;
   }
+
   return (
-    <div className="container animate__animated animate__fadeIn">
-      <h2 className="text-center mb-4">Create New Event</h2>
-      <form onSubmit={handleSubmit} className="shadow p-4 rounded bg-light">
-        <div className="mb-3">
+    <div className="form-container animate__animated animate__fadeIn">
+      <h2 className="form-title">Create New Event</h2>
+      <form onSubmit={handleSubmit} className="form">
+        <div className="form-group">
           <label htmlFor="bannerImage" className="form-label">
-            Banner Image
+            Banner Image <span className="required">*</span>
           </label>
           <input
             type="file"
@@ -82,9 +85,9 @@ const Event = () => {
           />
         </div>
 
-        <div className="mb-3">
+        <div className="form-group">
           <label htmlFor="title" className="form-label">
-            Event Title
+            Event Title <span className="required">*</span>
           </label>
           <input
             type="text"
@@ -97,9 +100,9 @@ const Event = () => {
           />
         </div>
 
-        <div className="mb-3">
+        <div className="form-group">
           <label htmlFor="location" className="form-label">
-            Event Location
+            Event Location <span className="required">*</span>
           </label>
           <input
             type="text"
@@ -112,9 +115,9 @@ const Event = () => {
           />
         </div>
 
-        <div className="mb-3">
+        <div className="form-group">
           <label htmlFor="date" className="form-label">
-            Event Date
+            Event Date <span className="required">*</span>
           </label>
           <input
             type="date"
@@ -126,9 +129,9 @@ const Event = () => {
           />
         </div>
 
-        <div className="mb-3">
+        <div className="form-group">
           <label htmlFor="time" className="form-label">
-            Event Time
+            Event Time <span className="required">*</span>
           </label>
           <input
             type="time"
@@ -140,9 +143,9 @@ const Event = () => {
           />
         </div>
 
-        <div className="mb-3">
+        <div className="form-group">
           <label htmlFor="description" className="form-label">
-            Event Description
+            Event Description <span className="required">*</span>
           </label>
           <textarea
             className="form-control"
@@ -154,9 +157,9 @@ const Event = () => {
           />
         </div>
 
-        <div className="mb-3">
+        <div className="form-group">
           <label htmlFor="link" className="form-label">
-            Event Link
+            Event Link <span className="required">*</span>
           </label>
           <input
             type="url"
@@ -169,18 +172,7 @@ const Event = () => {
           />
         </div>
 
-        <button
-          type="submit"
-          className="btn w-100"
-          style={{
-            backgroundColor: "#ff5722",
-            color: "#fff",
-            border: "none",
-            padding: "10px",
-            borderRadius: "5px",
-            fontWeight: "bold",
-          }}
-        >
+        <button type="submit" className="btn-submit">
           Add Event
         </button>
       </form>

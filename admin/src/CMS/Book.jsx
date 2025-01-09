@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import BookList from "../LIst/BookList";
+import "./FormStyles.css"; // Common form styling
 
 const Book = () => {
   const [name, setName] = useState(""); // Book name
@@ -79,12 +80,12 @@ const Book = () => {
   }
 
   return (
-    <div className="container">
-      <h2 className="text-center mb-4">Add New Book</h2>
-      <form onSubmit={handleSubmit} className="shadow p-4 rounded bg-light">
-        <div className="mb-3">
+    <div className="form-container animate__animated animate__fadeIn">
+      <h2 className="form-title">Add New Book</h2>
+      <form onSubmit={handleSubmit} className="form">
+        <div className="form-group">
           <label htmlFor="name" className="form-label">
-            Book Name
+            Book Name <span className="required">*</span>
           </label>
           <input
             type="text"
@@ -96,7 +97,8 @@ const Book = () => {
             required
           />
         </div>
-        <div className="mb-3">
+
+        <div className="form-group">
           <label htmlFor="image" className="form-label">
             Cover Image
           </label>
@@ -108,9 +110,10 @@ const Book = () => {
             onChange={(e) => setImage(e.target.files[0])}
           />
         </div>
-        <div className="mb-3">
+
+        <div className="form-group">
           <label htmlFor="pdfFile" className="form-label">
-            Upload Book PDF
+            Upload Book PDF <span className="required">*</span>
           </label>
           <input
             type="file"
@@ -121,18 +124,8 @@ const Book = () => {
             required
           />
         </div>
-        <button
-          type="submit"
-          className="btn w-100"
-          style={{
-            backgroundColor: "#ff5722",
-            color: "#fff",
-            border: "none",
-            padding: "10px",
-            borderRadius: "5px",
-            fontWeight: "bold",
-          }}
-        >
+
+        <button type="submit" className="btn-submit">
           Add Book
         </button>
       </form>

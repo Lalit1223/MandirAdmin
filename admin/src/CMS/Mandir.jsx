@@ -1,125 +1,266 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import MandirList from "../LIst/MandirList";
+import "./FormStyles.css"; // Common styling for all forms
 
-const MandirList = () => {
-  const [mandirs, setMandirs] = useState([]);
+const Mandir = () => {
+  const navigate = useNavigate();
+
+  const [title, setTitle] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [description, setDescription] = useState("");
+  const [youtubeLink, setYoutubeLink] = useState("");
+  const [offlineVideos, setOfflineVideos] = useState({
+    offline_video_morning: "",
+    offline_video_evening: "",
+    offline_video_night: "",
+  });
+  const [aartiTimes, setAartiTimes] = useState({
+    aarti_time_morning: "",
+    aarti_time_evening: "",
+    aarti_time_night: "",
+  });
+  const [mapLink, setMapLink] = useState("");
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // Fetch mandirs from the API
-  useEffect(() => {
-    const fetchMandirs = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/api/mandir");
-        setMandirs(response.data);
-      } catch (err) {
-        setError("Failed to fetch mandir list.");
-        console.error(err);
-      }
-    };
+  const handleImageChange = (e) => {
+    const files = e.target.files;
 
-    fetchMandirs();
-  }, []);
+    if (files.length > 5) {
+      alert("You can only upload a maximum of 5 images.");
+      e.target.value = ""; // Clear the file input
+      return;
+    }
 
-  // Handle actions
-  const handleActivate = async (id) => {
+    const imagePromises = validImages.map((file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(imagePromises)
+      .then((base64Images) => setImages(base64Images))
+      .catch((err) => {
+        setError("Failed to read image files.");
+        console.error("Image conversion error:", err);
+      });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    // Description word count validation
+    const wordCount = description.trim().split(/\s+/).length;
+    if (wordCount > 150) {
+      setError("Description cannot exceed 150 words.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      await axios.put(`http://localhost:3000/api/mandir/${id}/activate`);
-      setMandirs((prev) =>
-        prev.map((mandir) =>
-          mandir.id === id ? { ...mandir, status: 1 } : mandir
-        )
-      );
-      alert("Mandir activated successfully!");
+      const response = await axios.post("http://localhost:3000/api/mandir", {
+        title,
+        nickname,
+        description,
+        youtube_live_link: youtubeLink,
+        offline_video_morning: offlineVideos.offline_video_morning,
+        offline_video_evening: offlineVideos.offline_video_evening,
+        offline_video_night: offlineVideos.offline_video_night,
+        aarti_time_morning: aartiTimes.aarti_time_morning,
+        aarti_time_evening: aartiTimes.aarti_time_evening,
+        aarti_time_night: aartiTimes.aarti_time_night,
+        map_link: mapLink,
+        images,
+      });
+
+      alert("Mandir added successfully!");
+      setTitle("");
+      setNickname("");
+      setDescription("");
+      setYoutubeLink("");
+      setOfflineVideos({
+        offline_video_morning: "",
+        offline_video_evening: "",
+        offline_video_night: "",
+      });
+      setAartiTimes({
+        aarti_time_morning: "",
+        aarti_time_evening: "",
+        aarti_time_night: "",
+      });
+      setMapLink("");
+      setIsSubmitted(true);
     } catch (err) {
-      console.error(err);
-      alert("Failed to activate Mandir.");
+      console.error("Error adding mandir:", err);
+      setError("Failed to add Mandir. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEdit = (id) => {
-    // Redirect or show edit form
-    alert(`Edit Mandir with ID: ${id}`);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this Mandir?")) {
-      try {
-        await axios.delete(`http://localhost:3000/api/mandir/${id}`);
-        setMandirs((prev) => prev.filter((mandir) => mandir.id !== id));
-        alert("Mandir deleted successfully!");
-      } catch (err) {
-        console.error(err);
-        alert("Failed to delete Mandir.");
-      }
-    }
-  };
+  if (isSubmitted) {
+    return <MandirList />;
+  }
 
   return (
-    <div className="container mt-5">
-      <h2 className="text-center mb-4">Mandir List</h2>
-      {error && <div className="alert alert-danger">{error}</div>}
-      <table className="table table-bordered table-hover">
-        <thead className="table-dark">
-          <tr>
-            <th>#</th>
-            <th>Title</th>
-            <th>Nickname</th>
-            <th>Description</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {mandirs.length > 0 ? (
-            mandirs.map((mandir, index) => (
-              <tr key={mandir.id}>
-                <td>{index + 1}</td>
-                <td>{mandir.title}</td>
-                <td>{mandir.nickname}</td>
-                <td>{mandir.description}</td>
-                <td>
-                  <span
-                    className={`badge ${
-                      mandir.status === 1 ? "bg-success" : "bg-secondary"
-                    }`}
-                  >
-                    {mandir.status === 1 ? "Active" : "Inactive"}
-                  </span>
-                </td>
-                <td>
-                  <button
-                    className="btn btn-success btn-sm me-2"
-                    disabled={mandir.status === 1}
-                    onClick={() => handleActivate(mandir.id)}
-                  >
-                    Activate
-                  </button>
-                  <button
-                    className="btn btn-primary btn-sm me-2"
-                    onClick={() => handleEdit(mandir.id)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="btn btn-danger btn-sm"
-                    onClick={() => handleDelete(mandir.id)}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="6" className="text-center">
-                No mandirs found.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+    <div className="form-container">
+      <h2 className="form-title">Add New Mandir</h2>
+      <form onSubmit={handleSubmit}>
+        {error && <div className="form-error">{error}</div>}
+
+        <div className="form-group">
+          <label htmlFor="title">
+            Title<span className="required">*</span>
+          </label>
+          <input
+            type="text"
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="nickname">Nickname</label>
+          <input
+            type="text"
+            id="nickname"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="description">
+            Description<span className="required">*</span>
+          </label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+          ></textarea>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="images">Upload Images</label>
+          <input
+            type="file"
+            id="images"
+            accept="image/*"
+            className="form-control"
+            onChange={handleImageChange}
+            multiple
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="youtubeLink">YouTube Live Link</label>
+          <input
+            type="url"
+            id="youtubeLink"
+            value={youtubeLink}
+            onChange={(e) => setYoutubeLink(e.target.value)}
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Offline Video Links</label>
+          <input
+            type="url"
+            placeholder="Morning Aarti Video"
+            value={offlineVideos.offline_video_morning}
+            onChange={(e) =>
+              setOfflineVideos({
+                ...offlineVideos,
+                offline_video_morning: e.target.value,
+              })
+            }
+          />
+          <input
+            type="url"
+            placeholder="Evening Aarti Video"
+            value={offlineVideos.offline_video_evening}
+            onChange={(e) =>
+              setOfflineVideos({
+                ...offlineVideos,
+                offline_video_evening: e.target.value,
+              })
+            }
+          />
+          <input
+            type="url"
+            placeholder="Night Aarti Video"
+            value={offlineVideos.offline_video_night}
+            onChange={(e) =>
+              setOfflineVideos({
+                ...offlineVideos,
+                offline_video_night: e.target.value,
+              })
+            }
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Aarti Times</label>
+          <input
+            type="time"
+            value={aartiTimes.aarti_time_morning}
+            onChange={(e) =>
+              setAartiTimes({
+                ...aartiTimes,
+                aarti_time_morning: e.target.value,
+              })
+            }
+          />
+          <input
+            type="time"
+            value={aartiTimes.aarti_time_evening}
+            onChange={(e) =>
+              setAartiTimes({
+                ...aartiTimes,
+                aarti_time_evening: e.target.value,
+              })
+            }
+          />
+          <input
+            type="time"
+            value={aartiTimes.aarti_time_night}
+            onChange={(e) =>
+              setAartiTimes({
+                ...aartiTimes,
+                aarti_time_night: e.target.value,
+              })
+            }
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="mapLink">Map Link</label>
+          <input
+            type="url"
+            id="mapLink"
+            value={mapLink}
+            onChange={(e) => setMapLink(e.target.value)}
+          />
+        </div>
+
+        <button type="submit" className="btn-submit" disabled={loading}>
+          {loading ? "Adding Mandir..." : "Add Mandir"}
+        </button>
+      </form>
     </div>
   );
 };
 
-export default MandirList;
+export default Mandir;

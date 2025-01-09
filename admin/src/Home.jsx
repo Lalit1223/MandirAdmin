@@ -16,6 +16,7 @@ import Horoscope from "./CMS/Horoscope";
 import OfflineMandir from "./LIst/OfflineMandir";
 import { useNavigate } from "react-router-dom"; // Import the navigation hook
 import axios from "axios";
+import Modal from "./Modal"; // Import Modal component
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -38,6 +39,12 @@ const Home = () => {
     setCurrentModal(modalType);
     setShowModal(true);
   };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setCurrentModal("");
+  };
+
   useEffect(() => {
     const fetchCount = async () => {
       try {
@@ -113,11 +120,6 @@ const Home = () => {
       link: event.link,
     };
   });
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setCurrentModal(""); // Reset the current modal type
-  };
 
   // Logout Handler
   const handleLogout = () => {
@@ -344,15 +346,15 @@ const Home = () => {
   const renderModalContent = () => {
     switch (currentModal) {
       case "Add Mandir":
-        return <Mandir />; // Add form for Mandir
+        return <Mandir />;
       case "Add Event":
-        return <Event />; // Event form
+        return <Event />;
       case "Add Book":
-        return <Book />; // Add form for Book
+        return <Book />;
       case "Add Suvichar":
-        return <Suvichar />; // Add form for Suvichar
+        return <Suvichar />;
       case "Add Daily Horoscope":
-        return <Horoscope />; // Add form for Indian History
+        return <Horoscope />;
       default:
         return <h4>Unknown Action</h4>;
     }
@@ -500,63 +502,12 @@ const Home = () => {
         </div>
 
         {/* Modal for Adding Event or Other CMS Options */}
-        {/* Modal for Adding Event or Other CMS Options */}
-        {showModal && (
-          <div
-            className="modal fade show d-block"
-            style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
-          >
-            <div className="modal-dialog modal-md">
-              {" "}
-              {/* Changed from modal-lg to modal-md */}
-              <div className="modal-content">
-                <div
-                  className="modal-header"
-                  style={{
-                    backgroundColor: "#ff5722", // Primary theme color
-                    color: "#ffffff", // Text color for contrast
-                  }}
-                >
-                  <h5 className="modal-title">{currentModal}</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    style={{ backgroundColor: "#ffffff", color: "#ff5722" }} // Contrast close button
-                    onClick={handleCloseModal}
-                  ></button>
-                </div>
-                <div
-                  className="modal-body"
-                  style={{
-                    backgroundColor: "#fef3eb", // Complementary light color for body
-                    color: "#333333", // Neutral text color
-                  }}
-                >
-                  {renderModalContent()}
-                </div>
-                <div
-                  className="modal-footer"
-                  style={{
-                    backgroundColor: "#fef3eb", // Match modal body
-                    borderTop: "1px solid #ff5722", // Optional separator
-                  }}
-                >
-                  <button
-                    type="button"
-                    className="btn"
-                    style={{
-                      backgroundColor: "#ff5722", // Primary theme color
-                      color: "#ffffff", // White text for contrast
-                    }}
-                    onClick={handleCloseModal}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <Modal
+          showModal={showModal}
+          handleCloseModal={handleCloseModal}
+          currentModal={currentModal}
+          renderModalContent={renderModalContent}
+        />
       </div>
     </div>
   );

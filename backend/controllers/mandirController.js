@@ -1,5 +1,4 @@
 const mandirModel = require("../models/mandirModel"); // Import model
-
 const { saveBase64File } = require("../config/saveBase64File");
 
 // Add Mandir
@@ -46,6 +45,7 @@ const addMandir = async (req, res) => {
       aarti_time_night,
       map_link,
       images: imageUrls,
+      status,
     });
 
     res.status(201).json({ message: "Mandir added successfully", mandirId });
@@ -70,19 +70,32 @@ const updateMandir = async (req, res) => {
     aarti_time_evening,
     aarti_time_night,
     map_link,
-    images,
+    images, // Expecting base64 images or existing paths
   } = req.body;
 
   let imageUrls = [];
-  if (images && images.length > 0) {
-    try {
-      imageUrls = images.map((image) =>
-        saveBase64File(image, "uploads", "mandir")
-      );
-    } catch (err) {
-      console.error("Error saving images:", err);
-      return res.status(500).json({ error: "Failed to save images." });
+  try {
+    if (images && images.length > 0) {
+      imageUrls = images.map((image) => {
+        if (image.startsWith("data:image")) {
+          // Save new Base64 image
+          return saveBase64File(image, "uploads", "mandir");
+        } else {
+          // Retain existing image path
+          return image;
+        }
+      });
+    } else {
+      // Retain existing images if no new ones are provided
+      const existingMandir = await mandirModel.getMandirById(mandirId);
+      if (!existingMandir) {
+        return res.status(404).json({ error: "Mandir not found." });
+      }
+      imageUrls = existingMandir.images;
     }
+  } catch (err) {
+    console.error("Error processing images:", err);
+    return res.status(500).json({ error: "Failed to process images." });
   }
 
   try {
@@ -99,7 +112,6 @@ const updateMandir = async (req, res) => {
       aarti_time_night,
       map_link,
       images: imageUrls,
-      status,
     });
 
     if (!updated) {
@@ -179,13 +191,14 @@ const updateMandirStatus = async (req, res) => {
 
 const getMandirCount = async (req, res) => {
   try {
-    const count = await mandirModel.getMandirCount(); // Call the newly added function
+    const count = await mandirModel.getMandirCount();
     res.status(200).json({ count });
   } catch (error) {
     console.error("Error fetching Mandir count:", error);
     res.status(500).json({ error: "Failed to fetch Mandir count." });
   }
 };
+
 module.exports = {
   addMandir,
   updateMandir,

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Modal from "../Modal"; // Import the Modal component
+import Mandir from "../CMS/Mandir";
+import MandirForm from "./MandirForm"; // A new component for the Mandir form
 
 const MandirList = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -7,6 +10,9 @@ const MandirList = () => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [showModal, setShowModal] = useState(false);
+  const [currentModal, setCurrentModal] = useState(""); // To manage modal title
+  const [mandirToEdit, setMandirToEdit] = useState(null); // State to store the Mandir to be edited
 
   useEffect(() => {
     axios
@@ -30,6 +36,51 @@ const MandirList = () => {
     setSortOrder(newSortOrder);
   };
 
+  const handleAddMandir = () => {
+    setCurrentModal("Add Mandir");
+    setMandirToEdit(null); // Clear any existing edit data
+    setShowModal(true); // Open the modal
+  };
+
+  const handleEditMandir = (id) => {
+    setCurrentModal("Edit Mandir");
+    axios
+      .get(`http://localhost:3000/api/mandir/${id}`)
+      .then((response) => {
+        setMandirToEdit(response.data); // Set the Mandir data for editing
+        setShowModal(true); // Open the modal
+      })
+      .catch((error) =>
+        console.error("Error fetching mandir data for edit:", error)
+      );
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false); // Close the modal
+  };
+
+  const handleSubmitForm = (formData) => {
+    const apiCall = mandirToEdit
+      ? axios.put(
+          `http://localhost:3000/api/mandir/${mandirToEdit.id}`,
+          formData
+        ) // Update existing Mandir
+      : axios.post("http://localhost:3000/api/mandir", formData); // Add new Mandir
+
+    apiCall
+      .then(() => {
+        setShowModal(false); // Close the modal
+        setMandirToEdit(null); // Clear the edit state
+        // Optionally, you can re-fetch the mandir list to reflect the changes
+        axios.get("http://localhost:3000/api/mandir").then((response) => {
+          setMandirList(response.data);
+        });
+      })
+      .catch((error) => {
+        console.error("Error submitting form:", error);
+        alert("Failed to submit data.");
+      });
+  };
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this Mandir?")) {
       try {
@@ -62,7 +113,6 @@ const MandirList = () => {
       alert("Failed to update status");
     }
   };
-
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = mandirList.slice(indexOfFirstItem, indexOfLastItem);
@@ -83,7 +133,7 @@ const MandirList = () => {
           <button
             className="btn btn-sm me-2"
             style={{ backgroundColor: "#ff5722", color: "#ffffff" }}
-            onClick={() => alert("Redirect to Add Mandir Modal")}
+            onClick={handleAddMandir}
           >
             <i className="bi bi-plus-circle"></i> Add Mandir
           </button>
@@ -101,6 +151,8 @@ const MandirList = () => {
           </div>
         </div>
       </div>
+
+      {/* Mandir List Table */}
       <div className="table-responsive">
         <table className="table table-hover shadow-sm rounded">
           <thead
@@ -146,7 +198,6 @@ const MandirList = () => {
                   >
                     {mandir.status === 1 ? "Live" : "Offline"}
                   </span>
-
                   <label className="switch">
                     <input
                       type="checkbox"
@@ -160,9 +211,7 @@ const MandirList = () => {
                 <td>
                   <button
                     className="btn btn-warning btn-sm m-2"
-                    onClick={() =>
-                      alert(`Edit functionality for Mandir ID: ${mandir.id}`)
-                    }
+                    onClick={() => handleEditMandir(mandir.id)} // Open the edit modal
                   >
                     <i className="bi bi-pencil-square"></i> Edit
                   </button>
@@ -178,6 +227,8 @@ const MandirList = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
       <div className="d-flex justify-content-between align-items-center mt-3">
         <button
           className="btn btn-sm"
@@ -201,11 +252,24 @@ const MandirList = () => {
           Next
         </button>
       </div>
-      <div className="mt-3  ">
+      <div className="mt-3">
         <span>
           Showing {filteredMandirList.length} of {mandirList.length} records
         </span>
       </div>
+
+      {/* Modal for Add/Edit Mandir */}
+      <Modal
+        showModal={showModal}
+        handleCloseModal={handleCloseModal}
+        currentModal={currentModal}
+        renderModalContent={() => (
+          <MandirForm
+            mandirData={mandirToEdit} // Pass the mandir data to the form if editing
+            onSubmit={handleSubmitForm} // Handle form submission
+          />
+        )}
+      />
     </div>
   );
 };
