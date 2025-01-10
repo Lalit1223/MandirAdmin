@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Modal from "../Modal"; // Import the Modal component
+import Event from "../CMS/Event";
 
 const EventList = () => {
   const [events, setEvents] = useState([]); // Manage event list
@@ -7,6 +9,8 @@ const EventList = () => {
   const [sortOrder, setSortOrder] = useState("asc"); // Sort toggle
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
   const itemsPerPage = 10; // Number of items per page
+  const [showModal, setShowModal] = useState(false); // Modal visibility state
+  const [currentModal, setCurrentModal] = useState(""); // To manage modal title
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -75,6 +79,15 @@ const EventList = () => {
     }
   };
 
+  const handleAddEvent = () => {
+    setCurrentModal("Add Mandir");
+    setShowModal(true); // Open the modal
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false); // Close the modal
+  };
+
   return (
     <div className="container">
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -82,11 +95,8 @@ const EventList = () => {
         <div>
           <button
             className="btn btn-sm me-2"
-            style={{
-              backgroundColor: "#ff5722", // Primary theme color
-              color: "#ffffff", // White text for contrast
-            }}
-            onClick={() => alert("Redirect to Add Event Modal")}
+            style={{ backgroundColor: "#ff5722", color: "#ffffff" }}
+            onClick={handleAddEvent}
           >
             <i className="bi bi-plus-circle"></i> Add Event
           </button>
@@ -173,6 +183,12 @@ const EventList = () => {
           Showing {currentEvents.length} of {filteredEvents.length} records
         </span>
       </div>
+      <Modal
+        showModal={showModal}
+        handleCloseModal={handleCloseModal}
+        currentModal={currentModal}
+        renderModalContent={() => <Event />} // Pass the Mandir component to render inside the modal
+      />
     </div>
   );
 };

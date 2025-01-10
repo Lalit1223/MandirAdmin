@@ -17,6 +17,7 @@ import OfflineMandir from "./LIst/OfflineMandir";
 import { useNavigate } from "react-router-dom"; // Import the navigation hook
 import axios from "axios";
 import Modal from "./Modal"; // Import Modal component
+const localizer = momentLocalizer(moment);
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -100,16 +101,32 @@ const Home = () => {
     fetchCount();
   }, []);
   const calendarEvents = events.map((event) => {
-    const startDateTime = event.time
-      ? new Date(`${event.date.split("T")[0]}T${event.time}`) // Combine date and time
-      : new Date(event.date); // Default to just the date
+    const date = event.date.split("T")[0]; // Extract the date part (YYYY-MM-DD)
+    const time = event.time;
 
-    const endDateTime = event.time
-      ? new Date(
-          new Date(`${event.date.split("T")[0]}T${event.time}`).getTime() +
-            60 * 60 * 1000
-        ) // Default 1-hour duration
-      : new Date(event.date); // Default end as the same date
+    // Create a UTC-based Date object to avoid timezone shifts
+    const startDateTime = time
+      ? new Date(`${date}T${time}Z`) // Combine date and time, append 'Z' for UTC
+      : new Date(
+          Date.UTC(
+            new Date(date).getFullYear(),
+            new Date(date).getMonth(),
+            new Date(date).getDate()
+          )
+        ); // Default to UTC start of the day
+
+    const endDateTime = time
+      ? new Date(new Date(`${date}T${time}Z`).getTime() + 60 * 60 * 1000) // Add 1 hour
+      : new Date(
+          Date.UTC(
+            new Date(date).getFullYear(),
+            new Date(date).getMonth(),
+            new Date(date).getDate(),
+            23,
+            59,
+            59
+          )
+        ); // Default to UTC end of the day
 
     return {
       title: event.title,
@@ -121,6 +138,7 @@ const Home = () => {
     };
   });
 
+  console.log(calendarEvents);
   // Logout Handler
   const handleLogout = () => {
     // Clear user data (if stored in localStorage/sessionStorage)
@@ -138,8 +156,6 @@ const Home = () => {
   //   end: new Date(event.date), // Single-day events
   //   category: event.category || "default", // Assuming events have a category
   // }));
-
-  const localizer = momentLocalizer(moment);
 
   const renderContent = () => {
     switch (activeTab) {
