@@ -6,6 +6,7 @@ import "./FormStyles.css"; // Assuming you're using the same CSS file for stylin
 const Horoscope = () => {
   const navigate = useNavigate();
   const [horoscopeText, setHoroscopeText] = useState("");
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

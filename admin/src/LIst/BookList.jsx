@@ -7,12 +7,13 @@ const BookList = () => {
   const [sortOrder, setSortOrder] = useState("asc"); // Sorting order
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
   const itemsPerPage = 10; // Number of items per page
+  const API_URL = import.meta.env.VITE_API_URL;
 
   // Fetch books from the database
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/books");
+        const response = await axios.get(`${API_URL}/api/books`);
         console.log(response.data); // Debugging line
 
         setBooks(response.data);
@@ -29,7 +30,7 @@ const BookList = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this BOOK?")) {
       try {
-        await axios.delete(`http://localhost:3000/api/books/${id}`);
+        await axios.delete(`${API_URL}/api/books/${id}`);
         setBooks(books.filter((book) => book.id !== id));
         alert("Book deleted successfully!");
       } catch (error) {
@@ -108,7 +109,7 @@ const BookList = () => {
                 <td>
                   {book.coverImagePath ? (
                     <img
-                      src={`http://localhost:3000${book.coverImagePath}`}
+                      src={`${API_URL}${book.coverImagePath}`}
                       alt={book.name}
                       style={{ width: "50px", height: "50px" }}
                     />
@@ -119,7 +120,7 @@ const BookList = () => {
                 <td>
                   {book.pdfFilePath ? (
                     <a
-                      href={`http://localhost:3000${book.pdfFilePath}`}
+                      href={`${API_URL}${book.pdfFilePath}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

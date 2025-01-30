@@ -8,11 +8,12 @@ const UserList = () => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/users");
+        const response = await axios.get(`${API_URL}/api/users`);
         setUsers(response.data);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -35,7 +36,7 @@ const UserList = () => {
     const newStatus = currentStatus === 1 ? 0 : 1;
 
     try {
-      await axios.patch(`http://localhost:3000/api/users/${id}/status`, {
+      await axios.patch(`${API_URL}/api/users/${id}/status`, {
         status: newStatus,
       });
       setUsers((prevUsers) =>

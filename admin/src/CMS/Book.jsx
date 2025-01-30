@@ -8,6 +8,7 @@ const Book = () => {
   const [image, setImage] = useState(null); // Cover image
   const [pdfFile, setPdfFile] = useState(null); // PDF file
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL;
 
   // Convert file to base64
   const fileToBase64 = (file) => {
@@ -52,15 +53,11 @@ const Book = () => {
     };
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/books",
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.post(`${API_URL}/api/books`, payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       alert("Book added successfully!");
 

@@ -7,12 +7,13 @@ const OfflineMandir = () => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     // Fetch only offline mandirs (status = 0)
     const fetchOfflineMandirs = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/mandir");
+        const response = await axios.get(`${API_URL}/api/mandir`);
         const offlineMandirs = response.data.filter(
           (mandir) => mandir.status === 0
         );

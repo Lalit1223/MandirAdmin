@@ -70,8 +70,7 @@ const MandirForm = ({ mandirData, onSubmit }) => {
     }
   };
 
-  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000"; // For existing image URLs
-
+  const baseUrl = import.meta.env.VITE_API_URL; // For existing image URLs
   return (
     <div className="form-container">
       <h2 className="form-title">

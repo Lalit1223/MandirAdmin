@@ -13,10 +13,11 @@ const MandirList = () => {
   const [showModal, setShowModal] = useState(false);
   const [currentModal, setCurrentModal] = useState(""); // To manage modal title
   const [mandirToEdit, setMandirToEdit] = useState(null); // State to store the Mandir to be edited
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     axios
-      .get("http://localhost:3000/api/mandir")
+      .get(`${API_URL}/api/mandir`)
       .then((response) => {
         setMandirList(response.data);
       })
@@ -45,7 +46,7 @@ const MandirList = () => {
   const handleEditMandir = (id) => {
     setCurrentModal("Edit Mandir");
     axios
-      .get(`http://localhost:3000/api/mandir/${id}`)
+      .get(`${API_URL}/api/mandir/${id}`)
       .then((response) => {
         setMandirToEdit(response.data); // Set the Mandir data for editing
         setShowModal(true); // Open the modal
@@ -61,18 +62,15 @@ const MandirList = () => {
 
   const handleSubmitForm = (formData) => {
     const apiCall = mandirToEdit
-      ? axios.put(
-          `http://localhost:3000/api/mandir/${mandirToEdit.id}`,
-          formData
-        ) // Update existing Mandir
-      : axios.post("http://localhost:3000/api/mandir", formData); // Add new Mandir
+      ? axios.put(`${API_URL}/api/mandir/${mandirToEdit.id}`, formData) // Update existing Mandir
+      : axios.post(`${API_URL}/api/mandir`, formData); // Add new Mandir
 
     apiCall
       .then(() => {
         setShowModal(false); // Close the modal
         setMandirToEdit(null); // Clear the edit state
         // Optionally, you can re-fetch the mandir list to reflect the changes
-        axios.get("http://localhost:3000/api/mandir").then((response) => {
+        axios.get(`${API_URL}/api/mandir`).then((response) => {
           setMandirList(response.data);
         });
       })
@@ -84,7 +82,7 @@ const MandirList = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this Mandir?")) {
       try {
-        await axios.delete(`http://localhost:3000/api/mandir/${id}`);
+        await axios.delete(`${API_URL}/api/mandir/${id}`);
         setMandirList(mandirList.filter((mandir) => mandir.id !== id));
         alert("Mandir deleted successfully!");
       } catch (error) {
@@ -98,7 +96,7 @@ const MandirList = () => {
     const newStatus = currentStatus === 1 ? 0 : 1;
 
     try {
-      await axios.patch(`http://localhost:3000/api/mandir/${id}/status`, {
+      await axios.patch(`${API_URL}/api/mandir/${id}/status`, {
         status: newStatus,
       });
 

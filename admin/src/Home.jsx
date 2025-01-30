@@ -17,6 +17,7 @@ import OfflineMandir from "./LIst/OfflineMandir";
 import { useNavigate } from "react-router-dom"; // Import the navigation hook
 import axios from "axios";
 import Modal from "./Modal"; // Import Modal component
+import Avatar from "./CMS/Avatar";
 const localizer = momentLocalizer(moment);
 
 const Home = () => {
@@ -45,22 +46,19 @@ const Home = () => {
     setShowModal(false);
     setCurrentModal("");
   };
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const userResponse = await axios.get(
-          "http://localhost:3000/api/users/count"
-        );
+        const userResponse = await axios.get(`${API_URL}/api/users/count`);
         setUserCount(userResponse.data.count);
       } catch (error) {
         console.error("Error fetching user count:", error);
       }
 
       try {
-        const mandirResponse = await axios.get(
-          "http://localhost:3000/api/mandir"
-        );
+        const mandirResponse = await axios.get(`${API_URL}/api/mandir`);
         const mandirs = mandirResponse.data; // Assuming this returns an array of mandirs
         const totalMandirCount = mandirs.length;
         const offlineMandirCount = mandirs.filter(
@@ -79,9 +77,7 @@ const Home = () => {
       }
 
       try {
-        const eventResponse = await axios.get(
-          "http://localhost:3000/api/events/count"
-        );
+        const eventResponse = await axios.get(`${API_URL}/api/events/count`);
         setEventCount(eventResponse.data.count);
       } catch (error) {
         console.error("Error fetching event count:", error);
@@ -90,7 +86,7 @@ const Home = () => {
 
     const fetchEvents = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/events");
+        const response = await axios.get(`${API_URL}/api/events`);
         setEvents(response.data);
       } catch (error) {
         console.error("Error fetching events:", error);
@@ -138,7 +134,6 @@ const Home = () => {
     };
   });
 
-  console.log(calendarEvents);
   // Logout Handler
   const handleLogout = () => {
     // Clear user data (if stored in localStorage/sessionStorage)
@@ -296,6 +291,10 @@ const Home = () => {
                 title: "Add Daily Horoscope",
                 icon: "bi bi-moon-stars icons", // History icon
               },
+              {
+                title: "Add User Avatars",
+                icon: "bi bi-person-circle icons", // User avatar icon
+              },
             ].map((item, index) => (
               <div className="col-6 col-sm-4 col-md-3 mb-4" key={index}>
                 <div
@@ -371,6 +370,8 @@ const Home = () => {
         return <Suvichar />;
       case "Add Daily Horoscope":
         return <Horoscope />;
+      case "Add User Avatars":
+        return <Avatar />;
       default:
         return <h4>Unknown Action</h4>;
     }

@@ -11,11 +11,12 @@ const EventList = () => {
   const itemsPerPage = 10; // Number of items per page
   const [showModal, setShowModal] = useState(false); // Modal visibility state
   const [currentModal, setCurrentModal] = useState(""); // To manage modal title
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/events"); // Fetch events from backend
+        const response = await axios.get(`${API_URL}/api/events`); // Fetch events from backend
         setEvents(response.data); // Set the event data into state
       } catch (error) {
         console.error("Error fetching events:", error);
@@ -29,7 +30,7 @@ const EventList = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this Event?")) {
       try {
-        await axios.delete(`http://localhost:3000/api/events/${id}`);
+        await axios.delete(`${API_URL}/api/events/${id}`);
         setEvents(events.filter((event) => event.id !== id)); // Remove deleted event from state
       } catch (error) {
         console.error("Error deleting event:", error);

@@ -26,6 +26,7 @@ const Mandir = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const handleImageChange = (e) => {
     const files = e.target.files;
@@ -67,7 +68,7 @@ const Mandir = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:3000/api/mandir", {
+      const response = await axios.post(`${API_URL}/api/mandir`, {
         title,
         nickname,
         description,

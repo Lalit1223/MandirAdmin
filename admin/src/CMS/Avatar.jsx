@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./FormStyles.css"; // Common form styling
 
-const Suvichar = () => {
+const Avatar = () => {
   const [image, setImage] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const API_URL = import.meta.env.VITE_API_URL;
@@ -41,32 +41,30 @@ const Suvichar = () => {
     };
 
     try {
-      const response = await axios.post(`${API_URL}/api/suvichar`, payload, {
+      const response = await axios.post(`${API_URL}/api/avatar`, payload, {
         headers: {
           "Content-Type": "application/json",
         },
       });
 
-      alert("Suvichar image uploaded successfully!");
+      alert("Avatar image uploaded successfully!");
 
       // Reset form fields
       setImage(null);
       setIsSubmitted(true);
     } catch (error) {
-      console.error("Error uploading suvichar image:", error);
+      console.error("Error uploading Avatar image:", error);
       alert("Failed to upload the image. Please try again.");
     }
   };
 
   if (isSubmitted) {
-    return (
-      <h4 className="text-center">Suvichar image uploaded successfully!</h4>
-    );
+    return <h4 className="text-center">Avatar image uploaded successfully!</h4>;
   }
 
   return (
     <div className="form-container animate__animated animate__fadeIn">
-      <h2 className="form-title">Upload Suvichar Image</h2>
+      <h2 className="form-title">Upload Avatar Image</h2>
       <form onSubmit={handleSubmit} className="form">
         <div className="form-group">
           <label htmlFor="image" className="form-label">
@@ -90,4 +88,4 @@ const Suvichar = () => {
   );
 };
 
-export default Suvichar;
+export default Avatar;

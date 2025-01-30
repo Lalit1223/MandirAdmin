@@ -16,6 +16,7 @@ const Event = () => {
   const [link, setLink] = useState("");
   const [bannerImage, setBannerImage] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -40,10 +41,7 @@ const Event = () => {
     };
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/events",
-        eventData
-      );
+      const response = await axios.post(`${API_URL}/api/events`, eventData);
       alert("Event added successfully!");
 
       // Reset form fields

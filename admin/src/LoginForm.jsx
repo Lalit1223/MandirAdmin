@@ -4,6 +4,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,13 +26,10 @@ const LoginForm = () => {
     setError(""); // Clear previous error
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/admin/login",
-        {
-          email,
-          password,
-        }
-      );
+      const response = await axios.post(`${API_URL}/api/admin/login`, {
+        email,
+        password,
+      });
 
       // Handle successful login (for example, save token in localStorage)
       if (response.data.token) {
