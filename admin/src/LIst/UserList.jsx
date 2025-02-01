@@ -1,25 +1,38 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "../Home.css"; // Add custom styles here
+import "../Home.css";
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 10;
   const API_URL = import.meta.env.VITE_API_URL;
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/api/users`);
-        setUsers(response.data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        alert("Failed to fetch users from the server.");
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/api/users`);
+      console.log("User response:", response.data);
+
+      if (!response.data.error) {
+        const userData = response.data.users || response.data;
+        setUsers(Array.isArray(userData) ? userData : []);
+      } else {
+        console.error("Error from server:", response.data.message);
+        setUsers([]);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUsers();
   }, []);
 
@@ -74,100 +87,128 @@ const UserList = () => {
     <div className="container">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h3 className="text-primary">User List</h3>
-        <div>
+        <div className="input-group" style={{ maxWidth: "300px" }}>
           <input
             type="text"
-            className="form-control me-2"
+            className="form-control"
             placeholder="Search user..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          <span className="input-group-text">
+            <i className="bi bi-search"></i>
+          </span>
         </div>
       </div>
 
-      <div className="table-responsive">
-        <table className="table table-hover shadow-sm rounded">
-          <thead
-            className="text-white"
-            style={{
-              background: "linear-gradient(135deg, #ff5722, #ecba80)",
-            }}
+      {loading ? (
+        <div className="text-center my-4">
+          <div
+            className="spinner-border"
+            style={{ color: "#ff5722" }}
+            role="status"
           >
-            <tr>
-              <th onClick={handleSort} style={{ cursor: "pointer" }}>
-                # {sortOrder === "asc" ? "↑" : "↓"}
-              </th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Number</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentUsers.map((user) => (
-              <tr key={user.id}>
-                <td className="fw-bold">{user.id}</td>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
-                <td>{user.mobile}</td>
-                <td>
-                  <span
-                    className={`badge ${
-                      user.status === 1 ? "bg-success" : "bg-secondary"
-                    }`}
-                  >
-                    {user.status === 1 ? "Active" : "Inactive"}
-                  </span>
-                </td>
-                <td>
-                  <label className="switch">
-                    <input
-                      type="checkbox"
-                      checked={user.status === 1}
-                      onChange={() => toggleStatus(user.id, user.status)}
-                    />
-                    <span className="slider round"></span>
-                  </label>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      ) : users.length === 0 ? (
+        <div className="text-center my-4">
+          <i
+            className="bi bi-people text-muted"
+            style={{ fontSize: "2rem" }}
+          ></i>
+          <p className="text-muted mt-2">No users available</p>
+        </div>
+      ) : (
+        <>
+          <div className="table-responsive">
+            <table className="table table-hover shadow-sm rounded">
+              <thead
+                className="text-white"
+                style={{
+                  background: "linear-gradient(135deg, #ff5722, #ecba80)",
+                }}
+              >
+                <tr>
+                  <th onClick={handleSort} style={{ cursor: "pointer" }}>
+                    # {sortOrder === "asc" ? "↑" : "↓"}
+                  </th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Number</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentUsers.map((user) => (
+                  <tr key={user.id}>
+                    <td className="fw-bold">{user.id}</td>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>{user.mobile_number || "N/A"}</td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          user.status === 1 ? "bg-success" : "bg-secondary"
+                        }`}
+                        style={{
+                          fontSize: "0.9rem",
+                          borderRadius: "10px",
+                        }}
+                      >
+                        {user.status === 1 ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                    <td>
+                      <label className="switch">
+                        <input
+                          type="checkbox"
+                          checked={user.status === 1}
+                          onChange={() => toggleStatus(user.id, user.status)}
+                        />
+                        <span className="slider round"></span>
+                      </label>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-      <div className="d-flex justify-content-between align-items-center mt-3">
-        <button
-          className="btn btn-sm"
-          style={{
-            backgroundColor: "#ff5722",
-            color: "#ffffff",
-          }}
-          onClick={() => changePage(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          Previous
-        </button>
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          className="btn btn-sm"
-          style={{
-            backgroundColor: "#ff5722",
-            color: "#ffffff",
-          }}
-          onClick={() => changePage(currentPage + 1)}
-          disabled={currentPage === totalPages}
-        >
-          Next
-        </button>
-      </div>
-      <div className="mt-3">
-        <span>
-          Showing {currentUsers.length} of {filteredUsers.length} records
-        </span>
-      </div>
+          {users.length > 0 && (
+            <>
+              <div className="d-flex justify-content-between align-items-center mt-3">
+                <button
+                  className="btn btn-sm"
+                  style={{ backgroundColor: "#ff5722", color: "#ffffff" }}
+                  onClick={() => changePage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </button>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  className="btn btn-sm"
+                  style={{ backgroundColor: "#ff5722", color: "#ffffff" }}
+                  onClick={() => changePage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
+              </div>
+              <div className="mt-3">
+                <span>
+                  Showing {currentUsers.length} of {filteredUsers.length}{" "}
+                  records
+                </span>
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 };

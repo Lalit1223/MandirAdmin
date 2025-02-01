@@ -28,11 +28,22 @@ const Home = () => {
   const [mandirCount, setMandirCount] = useState(0);
   const [offlineMandirCount, setOfflineMandirCount] = useState(0);
   const [liveMandirCount, setLiveMandirCount] = useState(0);
+  const [loading, setLoading] = useState({
+    users: false,
+    mandirs: false,
+    events: false,
+    books: false,
+  });
+
+  // Add this before the return statement for better error handling
+  const handleListError = (type, message) => {
+    console.error(`${type} Error:`, message);
+    setLoading((prev) => ({ ...prev, [type]: false }));
+  };
 
   const [eventCount, setEventCount] = useState(0);
 
-  const [events, setEvents] = useState([]);
-
+  const [events, setEvents] = useState([]); // Initialize as empty array
   const navigate = useNavigate(); // Hook for navigation
 
   const handleTabChange = (tab) => setActiveTab(tab);
@@ -47,92 +58,113 @@ const Home = () => {
     setCurrentModal("");
   };
   const API_URL = import.meta.env.VITE_API_URL;
-
   useEffect(() => {
     const fetchCount = async () => {
       try {
+        // User count
         const userResponse = await axios.get(`${API_URL}/api/users/count`);
-        setUserCount(userResponse.data.count);
+        if (!userResponse.data.error) {
+          setUserCount(userResponse.data.count);
+        }
       } catch (error) {
         console.error("Error fetching user count:", error);
+        setUserCount(0);
       }
 
       try {
+        // Mandir count
         const mandirResponse = await axios.get(`${API_URL}/api/mandir`);
-        const mandirs = mandirResponse.data; // Assuming this returns an array of mandirs
-        const totalMandirCount = mandirs.length;
-        const offlineMandirCount = mandirs.filter(
-          (mandir) => mandir.status === 0
-        ).length;
+        if (!mandirResponse.data.error) {
+          const mandirs = mandirResponse.data.mandirs || []; // Access through new structure
+          const totalMandirCount = mandirs.length;
+          const offlineMandirCount = mandirs.filter(
+            (mandir) => mandir.status === 0
+          ).length;
+          const liveMandirCount = mandirs.filter(
+            (mandir) => mandir.status === 1
+          ).length;
 
-        const liveMandirCount = mandirs.filter(
-          (mandir) => mandir.status === 1
-        ).length;
-
-        setMandirCount(totalMandirCount);
-        setOfflineMandirCount(offlineMandirCount);
-        setLiveMandirCount(liveMandirCount);
+          setMandirCount(totalMandirCount);
+          setOfflineMandirCount(offlineMandirCount);
+          setLiveMandirCount(liveMandirCount);
+        }
       } catch (error) {
         console.error("Error fetching Mandir data:", error);
+        setMandirCount(0);
+        setOfflineMandirCount(0);
+        setLiveMandirCount(0);
       }
 
       try {
+        // Event count
         const eventResponse = await axios.get(`${API_URL}/api/events/count`);
-        setEventCount(eventResponse.data.count);
+        if (!eventResponse.data.error) {
+          setEventCount(eventResponse.data.count);
+        }
       } catch (error) {
         console.error("Error fetching event count:", error);
+        setEventCount(0);
       }
     };
 
     const fetchEvents = async () => {
       try {
         const response = await axios.get(`${API_URL}/api/events`);
-        setEvents(response.data);
+        if (!response.data.error) {
+          setEvents(response.data.events || []); // Access through new structure
+        } else {
+          console.error("Error from server:", response.data.message);
+          setEvents([]);
+        }
       } catch (error) {
         console.error("Error fetching events:", error);
+        setEvents([]);
       }
     };
 
     fetchEvents();
     fetchCount();
   }, []);
-  const calendarEvents = events.map((event) => {
-    const date = event.date.split("T")[0]; // Extract the date part (YYYY-MM-DD)
-    const time = event.time;
 
-    // Create a UTC-based Date object to avoid timezone shifts
-    const startDateTime = time
-      ? new Date(`${date}T${time}Z`) // Combine date and time, append 'Z' for UTC
-      : new Date(
-          Date.UTC(
-            new Date(date).getFullYear(),
-            new Date(date).getMonth(),
-            new Date(date).getDate()
-          )
-        ); // Default to UTC start of the day
+  const calendarEvents = Array.isArray(events)
+    ? events.map((event) => {
+        const date = event.date.split("T")[0];
+        const time = event.time;
 
-    const endDateTime = time
-      ? new Date(new Date(`${date}T${time}Z`).getTime() + 60 * 60 * 1000) // Add 1 hour
-      : new Date(
-          Date.UTC(
-            new Date(date).getFullYear(),
-            new Date(date).getMonth(),
-            new Date(date).getDate(),
-            23,
-            59,
-            59
-          )
-        ); // Default to UTC end of the day
+        // Create a UTC-based Date object to avoid timezone shifts
+        const startDateTime = time
+          ? new Date(`${date}T${time}Z`) // Combine date and time, append 'Z' for UTC
+          : new Date(
+              Date.UTC(
+                new Date(date).getFullYear(),
+                new Date(date).getMonth(),
+                new Date(date).getDate()
+              )
+            ); // Default to UTC start of the day
 
-    return {
-      title: event.title,
-      start: startDateTime,
-      end: endDateTime,
-      description: event.description,
-      location: event.location,
-      link: event.link,
-    };
-  });
+        const endDateTime = time
+          ? new Date(new Date(`${date}T${time}Z`).getTime() + 60 * 60 * 1000) // Add 1 hour
+          : new Date(
+              Date.UTC(
+                new Date(date).getFullYear(),
+                new Date(date).getMonth(),
+                new Date(date).getDate(),
+                23,
+                59,
+                59
+              )
+            ); // Default to UTC end of the day
+
+        return {
+          title: event.title,
+          start: startDateTime,
+          end: endDateTime,
+          description: event.description,
+          location: event.location,
+          link: event.link,
+        };
+      })
+    : [];
 
   // Logout Handler
   const handleLogout = () => {
@@ -212,7 +244,6 @@ const Home = () => {
                 style={{
                   borderRadius: "12px",
                   background: "#f4f6f9", // Light gray background for card
-                  padding: "15px",
                   boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Soft shadow for card
                 }}
               >
@@ -221,45 +252,159 @@ const Home = () => {
                     style={{
                       height: "300px",
                       borderRadius: "10px",
-                      overflow: "hidden", // Ensures smooth corners for the calendar
-                      background: "#ffffff", // White background for the calendar
-                      border: "2px solid #ddd", // Border to define calendar edges
+                      overflow: "hidden",
+                      background: "#ffffff",
+                      border: "2px solid #ddd",
                     }}
                   >
-                    <Calendar
-                      localizer={localizer}
-                      events={calendarEvents}
-                      startAccessor="start"
-                      endAccessor="end"
-                      style={{
-                        height: "100%",
-                        borderRadius: "10px",
-                        fontFamily: "'Arial', sans-serif",
-                      }}
-                      eventPropGetter={() => ({
-                        style: {
-                          backgroundColor: "#ff5722", // Green background for all events
-                          color: "#ffffff", // White text
-                          borderRadius: "5px", // Rounded corners
-                        },
-                      })}
-                      components={{
-                        toolbar: () => (
-                          <div
-                            style={{
-                              background:
-                                "linear-gradient(120deg, #ff5722, #ecba80)",
-                              color: "#fff",
-                              padding: "10px",
-                              textAlign: "center",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            <span>Event Calendar</span>
-                          </div>
-                        ),
-                      }}
-                    />
+                    {events && events.length > 0 ? (
+                      <Calendar
+                        localizer={localizer}
+                        events={calendarEvents}
+                        startAccessor="start"
+                        endAccessor="end"
+                        style={{
+                          height: "100%",
+                          borderRadius: "10px",
+                          fontFamily: "'Arial', sans-serif",
+                        }}
+                        eventPropGetter={() => ({
+                          style: {
+                            backgroundColor: "#ff5722",
+                            color: "#ffffff",
+                            borderRadius: "5px",
+                          },
+                        })}
+                        components={{
+                          toolbar: (toolbarProps) => (
+                            <div
+                              style={{
+                                padding: "10px",
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                background:
+                                  "linear-gradient(120deg, #ff5722, #ecba80)",
+                                color: "#fff",
+                              }}
+                            >
+                              <div>
+                                <button
+                                  onClick={() =>
+                                    toolbarProps.onNavigate("PREV")
+                                  }
+                                  className="btn btn-sm"
+                                  style={{
+                                    backgroundColor: "white",
+                                    color: "#black",
+                                    marginRight: "5px",
+                                    border: "none",
+                                  }}
+                                >
+                                  <i className="bi bi-chevron-left"></i>
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    toolbarProps.onNavigate("NEXT")
+                                  }
+                                  className="btn btn-sm"
+                                  style={{
+                                    backgroundColor: "white",
+                                    color: "black",
+                                    marginRight: "10px",
+                                    border: "none",
+                                  }}
+                                >
+                                  <i className="bi bi-chevron-right"></i>
+                                </button>
+                              </div>
+
+                              <span style={{ fontWeight: "bold" }}>
+                                Event Calendar - {toolbarProps.label}
+                              </span>
+
+                              <div>
+                                <button
+                                  onClick={() => toolbarProps.onView("month")}
+                                  className="btn btn-sm"
+                                  style={{
+                                    backgroundColor:
+                                      toolbarProps.view === "month"
+                                        ? "#ff5722"
+                                        : "rgba(255, 86, 34, 0.25)",
+                                    color: "#fff",
+                                    marginRight: "5px",
+                                    border: "none",
+                                  }}
+                                >
+                                  Month
+                                </button>
+                                <button
+                                  onClick={() => toolbarProps.onView("week")}
+                                  className="btn btn-sm"
+                                  style={{
+                                    backgroundColor:
+                                      toolbarProps.view === "week"
+                                        ? "#ff5722"
+                                        : "rgba(255, 86, 34, 0.25)",
+                                    color: "#fff",
+                                    marginRight: "5px",
+                                    border: "none",
+                                  }}
+                                >
+                                  Week
+                                </button>
+                                <button
+                                  onClick={() => toolbarProps.onView("day")}
+                                  className="btn btn-sm"
+                                  style={{
+                                    backgroundColor:
+                                      toolbarProps.view === "day"
+                                        ? "#ff5722"
+                                        : "rgba(255, 86, 34, 0.25)",
+                                    color: "#fff",
+                                    border: "none",
+                                  }}
+                                >
+                                  Day
+                                </button>
+                              </div>
+                            </div>
+                          ),
+                        }}
+                        tooltipAccessor={(event) =>
+                          `${event.title} - ${
+                            event.description || "No description"
+                          }`
+                        }
+                        onSelectEvent={(event) => {
+                          alert(
+                            `Event: ${event.title}\nDescription: ${
+                              event.description || "No description"
+                            }\nLocation: ${event.location || "No location"}`
+                          );
+                        }}
+                        popup
+                        selectable
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          height: "100%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexDirection: "column",
+                          gap: "10px",
+                        }}
+                      >
+                        <i
+                          className="bi bi-calendar-x text-muted"
+                          style={{ fontSize: "2rem" }}
+                        ></i>
+                        <p className="text-muted">No events available</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -342,15 +487,41 @@ const Home = () => {
           </div>
         );
       case "mandirList":
-        return <MandirList />;
+        return (
+          <MandirList
+            onError={(message) => console.error("Mandir List Error:", message)}
+          />
+        );
+
       case "userList":
-        return <UserList />;
+        return (
+          <UserList
+            onError={(message) => console.error("User List Error:", message)}
+          />
+        );
+
       case "eventList":
-        return <EventList />;
+        return (
+          <EventList
+            onError={(message) => console.error("Event List Error:", message)}
+          />
+        );
+
       case "bookList":
-        return <BookList />;
+        return (
+          <BookList
+            onError={(message) => console.error("Book List Error:", message)}
+          />
+        );
+
       case "offlineMandir":
-        return <OfflineMandir />;
+        return (
+          <OfflineMandir
+            onError={(message) =>
+              console.error("Offline Mandir Error:", message)
+            }
+          />
+        );
       case "userManagement":
         return <h3>User Management</h3>;
       default:

@@ -14,6 +14,9 @@ const MandirForm = ({ mandirData, onSubmit }) => {
     aarti_time_evening: "",
     aarti_time_night: "",
     map_link: "",
+    country: "", // ✅ New field for Country
+    city: "", // ✅ New field for City
+
     status: 0,
   });
 
@@ -235,6 +238,36 @@ const MandirForm = ({ mandirData, onSubmit }) => {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Country */}
+        <div className="form-group">
+          <label className="form-label">
+            Country <span className="required">*</span>
+          </label>
+          <input
+            type="text"
+            className="form-control"
+            name="country"
+            value={formData.country}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        {/* City */}
+        <div className="form-group">
+          <label className="form-label">
+            City <span className="required">*</span>
+          </label>
+          <input
+            type="text"
+            className="form-control"
+            name="city"
+            value={formData.city}
+            onChange={handleChange}
+            required
+          />
         </div>
 
         {/* Status */}

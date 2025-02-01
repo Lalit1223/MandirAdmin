@@ -11,6 +11,8 @@ const Mandir = () => {
   const [nickname, setNickname] = useState("");
   const [description, setDescription] = useState("");
   const [youtubeLink, setYoutubeLink] = useState("");
+  const [city, setCity] = useState(""); // New state
+  const [country, setCountry] = useState(""); // New state
   const [offlineVideos, setOfflineVideos] = useState({
     offline_video_morning: "",
     offline_video_evening: "",
@@ -28,16 +30,42 @@ const Mandir = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const API_URL = import.meta.env.VITE_API_URL;
 
+  // const handleImageChange = (e) => {
+  //   const files = e.target.files;
+
+  //   if (files.length > 5) {
+  //     alert("You can only upload a maximum of 5 images.");
+  //     e.target.value = ""; // Clear the file input
+  //     return;
+  //   }
+
+  //   const imagePromises = validImages.map((file) => {
+  //     return new Promise((resolve, reject) => {
+  //       const reader = new FileReader();
+  //       reader.onloadend = () => resolve(reader.result);
+  //       reader.onerror = reject;
+  //       reader.readAsDataURL(file);
+  //     });
+  //   });
+
+  //   Promise.all(imagePromises)
+  //     .then((base64Images) => setImages(base64Images))
+  //     .catch((err) => {
+  //       setError("Failed to read image files.");
+  //       console.error("Image conversion error:", err);
+  //     });
+  // };
+
   const handleImageChange = (e) => {
-    const files = e.target.files;
+    const files = Array.from(e.target.files); // Convert FileList to array
 
     if (files.length > 5) {
       alert("You can only upload a maximum of 5 images.");
-      e.target.value = ""; // Clear the file input
+      e.target.value = "";
       return;
     }
 
-    const imagePromises = validImages.map((file) => {
+    const imagePromises = files.map((file) => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result);
@@ -72,6 +100,8 @@ const Mandir = () => {
         title,
         nickname,
         description,
+        city, // Sending city
+        country, // Sending country
         youtube_live_link: youtubeLink,
         offline_video_morning: offlineVideos.offline_video_morning,
         offline_video_evening: offlineVideos.offline_video_evening,
@@ -88,6 +118,8 @@ const Mandir = () => {
       setNickname("");
       setDescription("");
       setYoutubeLink("");
+      setCity(""); // Reset city
+      setCountry(""); // Reset country
       setOfflineVideos({
         offline_video_morning: "",
         offline_video_evening: "",
@@ -253,6 +285,34 @@ const Mandir = () => {
             id="mapLink"
             value={mapLink}
             onChange={(e) => setMapLink(e.target.value)}
+          />
+        </div>
+
+        {/* New City Input */}
+        <div className="form-group">
+          <label htmlFor="city">
+            City<span className="required">*</span>
+          </label>
+          <input
+            type="text"
+            id="city"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            required
+          />
+        </div>
+
+        {/* New Country Input */}
+        <div className="form-group">
+          <label htmlFor="country">
+            Country<span className="required">*</span>
+          </label>
+          <input
+            type="text"
+            id="country"
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            required
           />
         </div>
 

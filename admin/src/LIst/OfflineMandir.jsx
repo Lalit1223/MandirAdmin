@@ -6,26 +6,35 @@ const OfflineMandir = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 10;
   const API_URL = import.meta.env.VITE_API_URL;
 
-  useEffect(() => {
-    // Fetch only offline mandirs (status = 0)
-    const fetchOfflineMandirs = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/api/mandir`);
-        const offlineMandirs = response.data.filter(
-          (mandir) => mandir.status === 0
-        );
-        setMandirList(offlineMandirs);
-      } catch (error) {
-        console.error("Error fetching offline mandirs:", error);
-      }
-    };
+  const fetchOfflineMandirs = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/api/mandir`);
+      console.log("Mandir response:", response.data);
 
+      if (!response.data.error) {
+        const mandirs = response.data.mandirs || response.data;
+        const offlineMandirs = mandirs.filter((mandir) => mandir.status === 0);
+        setMandirList(Array.isArray(offlineMandirs) ? offlineMandirs : []);
+      } else {
+        console.error("Error from server:", response.data.message);
+        setMandirList([]);
+      }
+    } catch (error) {
+      console.error("Error fetching offline mandirs:", error);
+      setMandirList([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchOfflineMandirs();
   }, []);
-
   // Search functionality
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -61,106 +70,123 @@ const OfflineMandir = () => {
 
   return (
     <div className="container">
-      <div className="d-flex justify-content-between align-items-center mb-2">
+      <div className="d-flex justify-content-between align-items-center mb-3">
         <h3 className="text-primary">Offline Mandir List</h3>
-        <div>
-          <div className="input-group">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search Mandir..."
-              value={searchTerm}
-              onChange={handleSearch}
-            />
-            <span className="input-group-text">
-              <i className="bi bi-search"></i>
-            </span>
-          </div>
+        <div className="input-group" style={{ maxWidth: "300px" }}>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search Mandir..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+          <span className="input-group-text">
+            <i className="bi bi-search"></i>
+          </span>
         </div>
       </div>
 
-      {/* Table for displaying mandirs */}
-      <div className="table-responsive">
-        <table className="table table-hover shadow-sm rounded">
-          <thead
-            className="text-white"
-            style={{
-              background: "linear-gradient(135deg, #ff5722, #ecba80)",
-            }}
+      {loading ? (
+        <div className="text-center my-4">
+          <div
+            className="spinner-border"
+            style={{ color: "#ff5722" }}
+            role="status"
           >
-            <tr>
-              <th onClick={handleSort} style={{ cursor: "pointer" }}>
-                # {sortOrder === "asc" ? "↑" : "↓"}
-              </th>
-              <th>Name</th>
-              <th>Location</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.length > 0 ? (
-              currentItems.map((mandir) => (
-                <tr key={mandir.id}>
-                  <td className="fw-bold">{mandir.id}</td>
-                  <td>{mandir.title}</td>
-                  <td>
-                    <a
-                      href={mandir.map_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View Map
-                    </a>
-                  </td>
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      ) : mandirList.length === 0 ? (
+        <div className="text-center my-4">
+          <i
+            className="bi bi-building text-muted"
+            style={{ fontSize: "2rem" }}
+          ></i>
+          <p className="text-muted mt-2">No offline mandirs available</p>
+        </div>
+      ) : (
+        <>
+          <div className="table-responsive">
+            <table className="table table-hover shadow-sm rounded">
+              <thead
+                className="text-white"
+                style={{
+                  background: "linear-gradient(135deg, #ff5722, #ecba80)",
+                }}
+              >
+                <tr>
+                  <th onClick={handleSort} style={{ cursor: "pointer" }}>
+                    # {sortOrder === "asc" ? "↑" : "↓"}
+                  </th>
+                  <th>Name</th>
+                  <th>Location</th>
+                  <th>Directions</th>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="3" className="text-center">
-                  No Offline Mandirs Found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {currentItems.map((mandir) => (
+                  <tr key={mandir.id}>
+                    <td className="fw-bold">{mandir.id}</td>
+                    <td>{mandir.title}</td>
+                    <td>{mandir.city || "No location"}</td>
+                    <td>
+                      {mandir.map_link ? (
+                        <a
+                          href={mandir.map_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-decoration-none"
+                        >
+                          <i className="bi bi-geo-alt me-1"></i>
+                          View Map
+                        </a>
+                      ) : (
+                        <span className="text-muted">No map link</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-      {/* Pagination Controls */}
-      <div className="d-flex justify-content-between align-items-center mt-3">
-        <button
-          className="btn  btn-sm"
-          style={{
-            backgroundColor: "#ff5722", // Primary theme color
-            color: "#ffffff", // White text for contrast
-          }}
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-        >
-          Previous
-        </button>
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          className="btn  btn-sm"
-          style={{
-            backgroundColor: "#ff5722", // Primary theme color
-            color: "#ffffff", // White text for contrast
-          }}
-          onClick={() =>
-            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-          }
-          disabled={currentPage === totalPages}
-        >
-          Next
-        </button>
-      </div>
-
-      {/* Showing records info */}
-      <div className="mt-3">
-        <span>
-          Showing {currentItems.length} of {filteredMandirList.length} records
-        </span>
-      </div>
+          {mandirList.length > 0 && (
+            <>
+              <div className="d-flex justify-content-between align-items-center mt-3">
+                <button
+                  className="btn btn-sm"
+                  style={{ backgroundColor: "#ff5722", color: "#ffffff" }}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </button>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  className="btn btn-sm"
+                  style={{ backgroundColor: "#ff5722", color: "#ffffff" }}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
+              </div>
+              <div className="mt-3">
+                <span>
+                  Showing {currentItems.length} of {filteredMandirList.length}{" "}
+                  records
+                </span>
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 };
