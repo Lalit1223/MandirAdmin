@@ -113,12 +113,13 @@ const EventList = () => {
         <h3 className="text-primary">Event List</h3>
         <div className="d-flex gap-2">
           <button
-            className="btn btn-sm"
+            className="btn btn-sm me-2"
             style={{ backgroundColor: "#ff5722", color: "#ffffff" }}
             onClick={handleAddEvent}
           >
-            <i className="bi bi-plus-circle me-1"></i> Add Event
+            <i className="bi bi-plus-circle"></i> Add Event
           </button>
+
           <div className="input-group" style={{ maxWidth: "300px" }}>
             <input
               type="text"

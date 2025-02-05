@@ -160,7 +160,19 @@ const BookList = () => {
                           href={`${API_URL}${book.pdfFilePath}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="btn btn-sm btn-outline-primary"
+                          className="btn btn-sm"
+                          style={{
+                            color: "#ff5722",
+                            border: "1px solid #ff5722",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#ff5722";
+                            e.target.style.color = "#fff";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "transparent";
+                            e.target.style.color = "#ff5722";
+                          }}
                         >
                           <i className="bi bi-file-pdf me-1"></i>
                           View PDF
