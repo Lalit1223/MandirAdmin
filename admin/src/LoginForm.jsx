@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./App.css";
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -16,34 +15,34 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic form validation
     if (!email || !password) {
       setError("Email and Password are required!");
       return;
     }
 
     setLoading(true);
-    setError(""); // Clear previous error
+    setError("");
 
     try {
-      const response = await axios.post(`${API_URL}/api/admin/login`, {
-        email,
+      const response = await axios.post(`${API_URL}/admin/login`, {
+        email_id: email, // ✅ Match the backend's expected key
         password,
       });
 
-      // Handle successful login (for example, save token in localStorage)
-      if (response.data.token) {
-        localStorage.setItem("authToken", response.data.token);
-        localStorage.setItem("isAuthenticated", true); // Save token to localStorage
-        navigate("/home"); // Redirect to home page after successful login
+      if (response.data?.data?.token) {
+        localStorage.setItem("authToken", response.data.data.token);
+        localStorage.setItem("admin", JSON.stringify(response.data.data.admin));
+        localStorage.setItem("isAuthenticated", "true");
+        navigate("/home");
       } else {
-        setError("Login failed. Please try again.");
+        setError("Invalid credentials. Please try again.");
       }
     } catch (error) {
-      setError("An error occurred. Please try again.");
-      console.error(error);
+      setError(
+        error.response?.data?.message || "An error occurred. Please try again."
+      );
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
@@ -108,7 +107,7 @@ const LoginForm = () => {
             type="submit"
             className="btn btn-danger w-100"
             style={{ transition: "all 0.3s" }}
-            disabled={loading} // Disable button when loading
+            disabled={loading}
           >
             {loading ? "Logging in..." : "Login"}
           </button>

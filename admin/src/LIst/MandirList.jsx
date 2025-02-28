@@ -2,8 +2,12 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Modal from "../Modal";
 import MandirForm from "./MandirForm";
+import { useNavigate } from "react-router-dom";
 
 const MandirList = () => {
+  const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const [searchTerm, setSearchTerm] = useState("");
   const [mandirList, setMandirList] = useState([]);
   const [sortOrder, setSortOrder] = useState("asc");
@@ -13,32 +17,60 @@ const MandirList = () => {
   const [showModal, setShowModal] = useState(false);
   const [currentModal, setCurrentModal] = useState("");
   const [mandirToEdit, setMandirToEdit] = useState(null);
-  const API_URL = import.meta.env.VITE_API_URL;
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
+    const isAuth = localStorage.getItem("isAuthenticated");
+
+    if (!authToken || isAuth !== "true") {
+      // Redirect to login if not authenticated
+      navigate("/login");
+    } else {
+      fetchMandirs();
+    }
+  }, [navigate]);
 
   const fetchMandirs = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/api/mandir`);
-      console.log("Fetch response:", response.data); // For debugging
+      const authToken = localStorage.getItem("authToken");
 
-      if (!response.data.error) {
-        // Handle both response formats
-        const mandirs = response.data.mandirs || response.data;
-        setMandirList(Array.isArray(mandirs) ? mandirs : []);
+      if (!authToken) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}/mandir/admin/get`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      if (response.data.success) {
+        // Add index property to each mandir for numbering
+        const mandirs = response.data.data.map((mandir, index) => ({
+          ...mandir,
+          index: index + 1,
+        }));
+        setMandirList(mandirs || []);
       } else {
         console.error("Error from server:", response.data.message);
         setMandirList([]);
       }
     } catch (error) {
       console.error("Error fetching mandir data:", error);
+      if (error.response?.status === 401) {
+        // Unauthorized - clear token and redirect to login
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("isAuthenticated");
+        navigate("/login");
+      }
       setMandirList([]);
     } finally {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    fetchMandirs();
-  }, []);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -46,9 +78,9 @@ const MandirList = () => {
 
   const handleSort = () => {
     const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
-    const sortedList = [...mandirList].sort((a, b) =>
-      newSortOrder === "asc" ? a.id - b.id : b.id - a.id
-    );
+    const sortedList = [...mandirList].sort((a, b) => {
+      return newSortOrder === "asc" ? a.index - b.index : b.index - a.index;
+    });
     setMandirList(sortedList);
     setSortOrder(newSortOrder);
   };
@@ -61,14 +93,24 @@ const MandirList = () => {
 
   const handleEditMandir = async (id) => {
     try {
+      setLoading(true);
       setCurrentModal("Edit Mandir");
-      const response = await axios.get(`${API_URL}/api/mandir/${id}`);
-      console.log("Edit response:", response.data); // For debugging
+      const authToken = localStorage.getItem("authToken");
 
-      if (!response.data.error) {
-        // Check if mandir data exists in the response
-        const mandirData = response.data.mandir || response.data;
-        setMandirToEdit(mandirData);
+      if (!authToken) {
+        navigate("/login");
+        return;
+      }
+
+      // Use the admin-specific endpoint to get mandir details
+      const response = await axios.get(`${API_URL}/mandir/admin/get/${id}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      if (response.data.success) {
+        setMandirToEdit(response.data.data);
         setShowModal(true);
       } else {
         console.error("Error from server:", response.data.message);
@@ -76,44 +118,43 @@ const MandirList = () => {
       }
     } catch (error) {
       console.error("Error fetching mandir data for edit:", error);
-      alert("Failed to fetch mandir details.");
-    }
-  };
-  const handleCloseModal = () => {
-    setShowModal(false); // Close the modal
-  };
-  const handleSubmitForm = async (formData) => {
-    try {
-      const apiCall = mandirToEdit
-        ? axios.put(`${API_URL}/api/mandir/${mandirToEdit.id}`, formData)
-        : axios.post(`${API_URL}/api/mandir`, formData);
-
-      const response = await apiCall;
-      console.log("Submit response:", response.data); // For debugging
-
-      if (!response.data.error) {
-        setShowModal(false);
-        setMandirToEdit(null);
-        await fetchMandirs(); // Use await to ensure data is refreshed
-        alert(
-          mandirToEdit
-            ? "Mandir updated successfully!"
-            : "Mandir added successfully!"
-        );
-      } else {
-        alert(response.data.message || "Operation failed. Please try again.");
+      if (error.response?.status === 401) {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("isAuthenticated");
+        navigate("/login");
       }
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      alert("Failed to submit data.");
+      alert("Failed to fetch mandir details.");
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  const handleSubmitComplete = () => {
+    handleCloseModal();
+    fetchMandirs(); // Refresh the list after submit
   };
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this Mandir?")) {
       try {
-        const response = await axios.delete(`${API_URL}/api/mandir/${id}`);
-        if (!response.data.error) {
+        const authToken = localStorage.getItem("authToken");
+
+        if (!authToken) {
+          navigate("/login");
+          return;
+        }
+
+        const response = await axios.delete(`${API_URL}/mandir/delete/${id}`, {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+
+        if (response.data.success) {
           fetchMandirs(); // Refresh list
           alert("Mandir deleted successfully!");
         } else {
@@ -121,21 +162,41 @@ const MandirList = () => {
         }
       } catch (error) {
         console.error("Error deleting Mandir:", error);
+        if (error.response?.status === 401) {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("isAuthenticated");
+          navigate("/login");
+        }
         alert("Failed to delete the Mandir. Please try again.");
       }
     }
   };
-  const toggleStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === 1 ? 0 : 1;
-    try {
-      const response = await axios.patch(`${API_URL}/api/mandir/${id}/status`, {
-        status: newStatus,
-      });
 
-      if (!response.data.error) {
+  const toggleStatus = async (id, currentStatus) => {
+    try {
+      const authToken = localStorage.getItem("authToken");
+
+      if (!authToken) {
+        navigate("/login");
+        return;
+      }
+
+      const newStatus = !currentStatus;
+
+      const response = await axios.patch(
+        `${API_URL}/mandir/update-status/${id}`,
+        { status: newStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
         setMandirList((prevList) =>
           prevList.map((mandir) =>
-            mandir.id === id ? { ...mandir, status: newStatus } : mandir
+            mandir._id === id ? { ...mandir, status: newStatus } : mandir
           )
         );
         alert("Status updated successfully");
@@ -144,26 +205,36 @@ const MandirList = () => {
       }
     } catch (error) {
       console.error("Error updating status:", error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("isAuthenticated");
+        navigate("/login");
+      }
       alert("Failed to update status");
     }
   };
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = mandirList.slice(indexOfFirstItem, indexOfLastItem);
-
-  const totalPages = Math.ceil(mandirList.length / itemsPerPage);
-
-  const filteredMandirList = currentItems.filter(
+  // Pagination logic
+  const filteredMandirList = mandirList.filter(
     (mandir) =>
       mandir.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mandir.map_link?.toLowerCase().includes(searchTerm.toLowerCase())
+      mandir.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mandir.country?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredMandirList.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+  const totalPages = Math.ceil(filteredMandirList.length / itemsPerPage);
+
   return (
     <div className="container">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h3 className="text-primary">Mandir List</h3>
-        <div>
+        <div className="d-flex">
           <button
             className="btn btn-sm me-2"
             style={{ backgroundColor: "#ff5722", color: "#ffffff" }}
@@ -219,6 +290,7 @@ const MandirList = () => {
                     # {sortOrder === "asc" ? "↑" : "↓"}
                   </th>
                   <th>Name</th>
+                  <th>Nickname</th>
                   <th>Location</th>
                   <th>Directions</th>
                   <th>Status</th>
@@ -226,11 +298,14 @@ const MandirList = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredMandirList.map((mandir) => (
-                  <tr key={mandir.id}>
-                    <td className="fw-bold">{mandir.id}</td>
+                {currentItems.map((mandir) => (
+                  <tr key={mandir._id}>
+                    <td className="fw-bold">{mandir.index}</td>
                     <td>{mandir.title}</td>
-                    <td>{mandir.city}</td>
+                    <td>{mandir.nick_name || "-"}</td>
+                    <td>
+                      {mandir.city}, {mandir.country}
+                    </td>
                     <td>
                       {mandir.map_link ? (
                         <a
@@ -249,7 +324,7 @@ const MandirList = () => {
                     <td className="d-flex flex-column align-items-center">
                       <span
                         className={`badge ${
-                          mandir.status === 1 ? "bg-success" : "bg-secondary"
+                          mandir.status ? "bg-success" : "bg-secondary"
                         }`}
                         style={{
                           fontSize: "0.9rem",
@@ -257,14 +332,14 @@ const MandirList = () => {
                           marginBottom: "5px",
                         }}
                       >
-                        {mandir.status === 1 ? "Live" : "Offline"}
+                        {mandir.status ? "Live" : "Offline"}
                       </span>
                       <label className="switch">
                         <input
                           type="checkbox"
-                          checked={mandir.status === 1}
+                          checked={mandir.status}
                           onChange={() =>
-                            toggleStatus(mandir.id, mandir.status)
+                            toggleStatus(mandir._id, mandir.status)
                           }
                         />
                         <span className="slider round"></span>
@@ -273,13 +348,13 @@ const MandirList = () => {
                     <td>
                       <button
                         className="btn btn-warning btn-sm m-2"
-                        onClick={() => handleEditMandir(mandir.id)}
+                        onClick={() => handleEditMandir(mandir._id)}
                       >
                         <i className="bi bi-pencil-square"></i> Edit
                       </button>
                       <button
                         className="btn btn-danger btn-sm"
-                        onClick={() => handleDelete(mandir.id)}
+                        onClick={() => handleDelete(mandir._id)}
                       >
                         <i className="bi bi-trash"></i> Delete
                       </button>
@@ -290,7 +365,7 @@ const MandirList = () => {
             </table>
           </div>
 
-          {mandirList.length > 0 && (
+          {filteredMandirList.length > 0 && (
             <>
               <div className="d-flex justify-content-between align-items-center mt-3">
                 <button
@@ -312,14 +387,14 @@ const MandirList = () => {
                   onClick={() =>
                     setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                   }
-                  disabled={currentPage === totalPages}
+                  disabled={currentPage === totalPages || totalPages === 0}
                 >
                   Next
                 </button>
               </div>
               <div className="mt-3">
                 <span>
-                  Showing {filteredMandirList.length} of {mandirList.length}{" "}
+                  Showing {currentItems.length} of {filteredMandirList.length}{" "}
                   records
                 </span>
               </div>
@@ -335,7 +410,7 @@ const MandirList = () => {
         renderModalContent={() => (
           <MandirForm
             mandirData={mandirToEdit}
-            onSubmit={handleSubmitForm}
+            onSubmit={handleSubmitComplete}
             isEditing={!!mandirToEdit}
           />
         )}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import MandirList from "../LIst/MandirList";
@@ -6,13 +6,12 @@ import "./FormStyles.css"; // Common styling for all forms
 
 const Mandir = () => {
   const navigate = useNavigate();
-
   const [title, setTitle] = useState("");
   const [nickname, setNickname] = useState("");
   const [description, setDescription] = useState("");
   const [youtubeLink, setYoutubeLink] = useState("");
-  const [city, setCity] = useState(""); // New state
-  const [country, setCountry] = useState(""); // New state
+  const [city, setCity] = useState("");
+  const [country, setCountry] = useState("");
   const [offlineVideos, setOfflineVideos] = useState({
     offline_video_morning: "",
     offline_video_evening: "",
@@ -24,40 +23,27 @@ const Mandir = () => {
     aarti_time_night: "",
   });
   const [mapLink, setMapLink] = useState("");
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState([]); // Store as File objects
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const API_URL = import.meta.env.VITE_API_URL;
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // const handleImageChange = (e) => {
-  //   const files = e.target.files;
+  // Check authentication on component mount
+  useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
+    const isAuth = localStorage.getItem("isAuthenticated");
 
-  //   if (files.length > 5) {
-  //     alert("You can only upload a maximum of 5 images.");
-  //     e.target.value = ""; // Clear the file input
-  //     return;
-  //   }
-
-  //   const imagePromises = validImages.map((file) => {
-  //     return new Promise((resolve, reject) => {
-  //       const reader = new FileReader();
-  //       reader.onloadend = () => resolve(reader.result);
-  //       reader.onerror = reject;
-  //       reader.readAsDataURL(file);
-  //     });
-  //   });
-
-  //   Promise.all(imagePromises)
-  //     .then((base64Images) => setImages(base64Images))
-  //     .catch((err) => {
-  //       setError("Failed to read image files.");
-  //       console.error("Image conversion error:", err);
-  //     });
-  // };
+    if (!authToken || isAuth !== "true") {
+      // Redirect to login if not authenticated
+      navigate("/login");
+    } else {
+      setIsAuthenticated(true);
+    }
+  }, [navigate]);
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files); // Convert FileList to array
+    const files = Array.from(e.target.files); // Convert FileList to an array
 
     if (files.length > 5) {
       alert("You can only upload a maximum of 5 images.");
@@ -65,21 +51,7 @@ const Mandir = () => {
       return;
     }
 
-    const imagePromises = files.map((file) => {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    });
-
-    Promise.all(imagePromises)
-      .then((base64Images) => setImages(base64Images))
-      .catch((err) => {
-        setError("Failed to read image files.");
-        console.error("Image conversion error:", err);
-      });
+    setImages(files); // Store files directly
   };
 
   const handleSubmit = async (e) => {
@@ -95,31 +67,69 @@ const Mandir = () => {
       return;
     }
 
+    // Get auth token
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) {
+      setError("You are not authenticated. Please login first.");
+      setLoading(false);
+      navigate("/login");
+      return;
+    }
+
     try {
-      const response = await axios.post(`${API_URL}/api/mandir`, {
-        title,
-        nickname,
-        description,
-        city, // Sending city
-        country, // Sending country
-        youtube_live_link: youtubeLink,
-        offline_video_morning: offlineVideos.offline_video_morning,
-        offline_video_evening: offlineVideos.offline_video_evening,
-        offline_video_night: offlineVideos.offline_video_night,
-        aarti_time_morning: aartiTimes.aarti_time_morning,
-        aarti_time_evening: aartiTimes.aarti_time_evening,
-        aarti_time_night: aartiTimes.aarti_time_night,
-        map_link: mapLink,
-        images,
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("nick_name", nickname);
+      formData.append("description", description);
+      formData.append("city", city);
+      formData.append("country", country);
+      formData.append("youtubeURL", youtubeLink);
+      formData.append("map_link", mapLink);
+
+      // Append images to FormData
+      images.forEach((image) => {
+        formData.append("images", image);
       });
+
+      // Append offline URLs
+      formData.append(
+        "offlineURL",
+        JSON.stringify({
+          morning: offlineVideos.offline_video_morning,
+          evening: offlineVideos.offline_video_evening,
+          night: offlineVideos.offline_video_night,
+        })
+      );
+
+      // Append aarti times
+      formData.append(
+        "aarti_time",
+        JSON.stringify({
+          morning: aartiTimes.aarti_time_morning,
+          evening: aartiTimes.aarti_time_evening,
+          night: aartiTimes.aarti_time_night,
+        })
+      );
+
+      // Send request with auth token
+      const response = await axios.post(
+        "https://man-mandir.onrender.com/mandir/add",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
 
       alert("Mandir added successfully!");
       setTitle("");
       setNickname("");
       setDescription("");
       setYoutubeLink("");
-      setCity(""); // Reset city
-      setCountry(""); // Reset country
+      setCity("");
+      setCountry("");
       setOfflineVideos({
         offline_video_morning: "",
         offline_video_evening: "",
@@ -131,14 +141,26 @@ const Mandir = () => {
         aarti_time_night: "",
       });
       setMapLink("");
+      setImages([]);
       setIsSubmitted(true);
     } catch (err) {
       console.error("Error adding mandir:", err);
-      setError("Failed to add Mandir. Please try again.");
+      if (err.response?.status === 401) {
+        setError("Authentication failed. Please login again.");
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("isAuthenticated");
+        navigate("/login");
+      } else {
+        setError("Failed to add Mandir. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  if (!isAuthenticated) {
+    return <div className="loading">Checking authentication...</div>;
+  }
 
   if (isSubmitted) {
     return <MandirList />;
@@ -183,112 +205,9 @@ const Mandir = () => {
             onChange={(e) => setDescription(e.target.value)}
             required
           ></textarea>
+          <small>{description.trim().split(/\s+/).length}/150 words</small>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="images">Upload Images</label>
-          <input
-            type="file"
-            id="images"
-            accept="image/*"
-            className="form-control"
-            onChange={handleImageChange}
-            multiple
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="youtubeLink">YouTube Live Link</label>
-          <input
-            type="url"
-            id="youtubeLink"
-            value={youtubeLink}
-            onChange={(e) => setYoutubeLink(e.target.value)}
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Offline Video Links</label>
-          <input
-            type="url"
-            placeholder="Morning Aarti Video"
-            value={offlineVideos.offline_video_morning}
-            onChange={(e) =>
-              setOfflineVideos({
-                ...offlineVideos,
-                offline_video_morning: e.target.value,
-              })
-            }
-          />
-          <input
-            type="url"
-            placeholder="Evening Aarti Video"
-            value={offlineVideos.offline_video_evening}
-            onChange={(e) =>
-              setOfflineVideos({
-                ...offlineVideos,
-                offline_video_evening: e.target.value,
-              })
-            }
-          />
-          <input
-            type="url"
-            placeholder="Night Aarti Video"
-            value={offlineVideos.offline_video_night}
-            onChange={(e) =>
-              setOfflineVideos({
-                ...offlineVideos,
-                offline_video_night: e.target.value,
-              })
-            }
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Aarti Times</label>
-          <input
-            type="time"
-            value={aartiTimes.aarti_time_morning}
-            onChange={(e) =>
-              setAartiTimes({
-                ...aartiTimes,
-                aarti_time_morning: e.target.value,
-              })
-            }
-          />
-          <input
-            type="time"
-            value={aartiTimes.aarti_time_evening}
-            onChange={(e) =>
-              setAartiTimes({
-                ...aartiTimes,
-                aarti_time_evening: e.target.value,
-              })
-            }
-          />
-          <input
-            type="time"
-            value={aartiTimes.aarti_time_night}
-            onChange={(e) =>
-              setAartiTimes({
-                ...aartiTimes,
-                aarti_time_night: e.target.value,
-              })
-            }
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="mapLink">Map Link</label>
-          <input
-            type="url"
-            id="mapLink"
-            value={mapLink}
-            onChange={(e) => setMapLink(e.target.value)}
-          />
-        </div>
-
-        {/* New City Input */}
         <div className="form-group">
           <label htmlFor="city">
             City<span className="required">*</span>
@@ -302,7 +221,6 @@ const Mandir = () => {
           />
         </div>
 
-        {/* New Country Input */}
         <div className="form-group">
           <label htmlFor="country">
             Country<span className="required">*</span>
@@ -313,6 +231,135 @@ const Mandir = () => {
             value={country}
             onChange={(e) => setCountry(e.target.value)}
             required
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="images">
+            Upload Images (Max: 5)<span className="required">*</span>
+          </label>
+          <input
+            type="file"
+            id="images"
+            accept="image/*"
+            onChange={handleImageChange}
+            multiple
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="youtubeLink">YouTube Live Link</label>
+          <input
+            type="url"
+            id="youtubeLink"
+            value={youtubeLink}
+            onChange={(e) => setYoutubeLink(e.target.value)}
+            placeholder="https://youtube.com/watch?v=..."
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Offline Video Links</label>
+          <div className="time-inputs">
+            <div className="time-input-group">
+              <label>Morning</label>
+              <input
+                type="url"
+                placeholder="https://example.com/morning.mp4"
+                value={offlineVideos.offline_video_morning}
+                onChange={(e) =>
+                  setOfflineVideos({
+                    ...offlineVideos,
+                    offline_video_morning: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div className="time-input-group">
+              <label>Evening</label>
+              <input
+                type="url"
+                placeholder="https://example.com/evening.mp4"
+                value={offlineVideos.offline_video_evening}
+                onChange={(e) =>
+                  setOfflineVideos({
+                    ...offlineVideos,
+                    offline_video_evening: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div className="time-input-group">
+              <label>Night</label>
+              <input
+                type="url"
+                placeholder="https://example.com/night.mp4"
+                value={offlineVideos.offline_video_night}
+                onChange={(e) =>
+                  setOfflineVideos({
+                    ...offlineVideos,
+                    offline_video_night: e.target.value,
+                  })
+                }
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>Aarti Times</label>
+          <div className="time-inputs">
+            <div className="time-input-group">
+              <label>Morning</label>
+              <input
+                type="time"
+                value={aartiTimes.aarti_time_morning}
+                onChange={(e) =>
+                  setAartiTimes({
+                    ...aartiTimes,
+                    aarti_time_morning: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div className="time-input-group">
+              <label>Evening</label>
+              <input
+                type="time"
+                value={aartiTimes.aarti_time_evening}
+                onChange={(e) =>
+                  setAartiTimes({
+                    ...aartiTimes,
+                    aarti_time_evening: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div className="time-input-group">
+              <label>Night</label>
+              <input
+                type="time"
+                value={aartiTimes.aarti_time_night}
+                onChange={(e) =>
+                  setAartiTimes({
+                    ...aartiTimes,
+                    aarti_time_night: e.target.value,
+                  })
+                }
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="mapLink">Map Link</label>
+          <input
+            type="url"
+            id="mapLink"
+            value={mapLink}
+            onChange={(e) => setMapLink(e.target.value)}
+            placeholder="https://maps.google.com/..."
           />
         </div>
 
