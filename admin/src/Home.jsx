@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Event from "./CMS/Event"; // Import Event form
+import Event from "./CMS/Event";
 import Mandir from "./CMS/Mandir";
 import Book from "./CMS/Book";
 import Suvichar from "./CMS/Suvichar";
@@ -11,40 +11,56 @@ import EventList from "./LIst/EventList";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import "./Home.css"; // Add custom styles here
+import "./Home.css";
 import Horoscope from "./CMS/Horoscope";
 import OfflineMandir from "./LIst/OfflineMandir";
-import { useNavigate } from "react-router-dom"; // Import the navigation hook
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import Modal from "./Modal"; // Import Modal component
+import Modal from "./Modal";
 import Avatar from "./CMS/Avatar";
 const localizer = momentLocalizer(moment);
 
 const Home = () => {
+  const navigate = useNavigate();
+  const API_URL =
+    import.meta.env.VITE_API_URL || "https://man-mandir.onrender.com";
+
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showModal, setShowModal] = useState(false);
-  const [currentModal, setCurrentModal] = useState(""); // Track which modal to show
+  const [currentModal, setCurrentModal] = useState("");
   const [userCount, setUserCount] = useState(0);
   const [mandirCount, setMandirCount] = useState(0);
   const [offlineMandirCount, setOfflineMandirCount] = useState(0);
   const [liveMandirCount, setLiveMandirCount] = useState(0);
+  const [eventCount, setEventCount] = useState(0);
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState({
     users: false,
     mandirs: false,
     events: false,
     books: false,
   });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Add this before the return statement for better error handling
+  // Check authentication on component mount
+  useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
+    const isAuth = localStorage.getItem("isAuthenticated");
+
+    if (!authToken || isAuth !== "true") {
+      // Redirect to login if not authenticated
+      navigate("/");
+    } else {
+      setIsAuthenticated(true);
+      fetchCounts();
+      fetchEvents();
+    }
+  }, [navigate]);
+
   const handleListError = (type, message) => {
     console.error(`${type} Error:`, message);
     setLoading((prev) => ({ ...prev, [type]: false }));
   };
-
-  const [eventCount, setEventCount] = useState(0);
-
-  const [events, setEvents] = useState([]); // Initialize as empty array
-  const navigate = useNavigate(); // Hook for navigation
 
   const handleTabChange = (tab) => setActiveTab(tab);
 
@@ -56,104 +72,97 @@ const Home = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setCurrentModal("");
+    // Refresh counts after closing a modal
+    fetchCounts();
+    if (currentModal === "Add Event") {
+      fetchEvents();
+    }
   };
-  const API_URL = import.meta.env.VITE_API_URL;
-  useEffect(() => {
-    const fetchCount = async () => {
-      try {
-        // User count
-        const userResponse = await axios.get(`${API_URL}/api/users/count`);
-        if (!userResponse.data.error) {
-          setUserCount(userResponse.data.count);
-        }
-      } catch (error) {
-        console.error("Error fetching user count:", error);
-        setUserCount(0);
+
+  const fetchCounts = async () => {
+    try {
+      const authToken = localStorage.getItem("authToken");
+
+      if (!authToken) {
+        navigate("/");
+        return;
       }
 
-      try {
-        // Mandir count
-        const mandirResponse = await axios.get(`${API_URL}/api/mandir`);
-        if (!mandirResponse.data.error) {
-          const mandirs = mandirResponse.data.mandirs || []; // Access through new structure
-          const totalMandirCount = mandirs.length;
-          const offlineMandirCount = mandirs.filter(
-            (mandir) => mandir.status === 0
-          ).length;
-          const liveMandirCount = mandirs.filter(
-            (mandir) => mandir.status === 1
-          ).length;
+      // Use the single endpoint for counts
+      const response = await axios.get(`${API_URL}/admin/counts`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
 
-          setMandirCount(totalMandirCount);
-          setOfflineMandirCount(offlineMandirCount);
-          setLiveMandirCount(liveMandirCount);
-        }
-      } catch (error) {
-        console.error("Error fetching Mandir data:", error);
-        setMandirCount(0);
-        setOfflineMandirCount(0);
-        setLiveMandirCount(0);
+      if (response.data.success) {
+        const countData = response.data.data;
+        setUserCount(countData.users || 0);
+        setMandirCount(countData.mandirs || 0);
+        setEventCount(countData.events || 0);
+
+        // Use the directly provided online/offline mandir counts
+        setLiveMandirCount(countData.onlineMandir || 0);
+        setOfflineMandirCount(countData.offlineMandir || 0);
+      } else {
+        console.error("Error fetching counts:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching counts:", error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("isAuthenticated");
+        navigate("/");
+      }
+    }
+  };
+
+  const fetchEvents = async () => {
+    try {
+      const authToken = localStorage.getItem("authToken");
+
+      if (!authToken) {
+        navigate("/");
+        return;
       }
 
-      try {
-        // Event count
-        const eventResponse = await axios.get(`${API_URL}/api/events/count`);
-        if (!eventResponse.data.error) {
-          setEventCount(eventResponse.data.count);
-        }
-      } catch (error) {
-        console.error("Error fetching event count:", error);
-        setEventCount(0);
-      }
-    };
+      const response = await axios.get(`${API_URL}/event/admin/get`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
 
-    const fetchEvents = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/api/events`);
-        if (!response.data.error) {
-          setEvents(response.data.events || []); // Access through new structure
-        } else {
-          console.error("Error from server:", response.data.message);
-          setEvents([]);
-        }
-      } catch (error) {
-        console.error("Error fetching events:", error);
+      if (response.data.success) {
+        setEvents(response.data.data || []);
+      } else {
+        console.error("Error fetching events:", response.data.message);
         setEvents([]);
       }
-    };
-
-    fetchEvents();
-    fetchCount();
-  }, []);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("isAuthenticated");
+        navigate("/");
+      }
+      setEvents([]);
+    }
+  };
 
   const calendarEvents = Array.isArray(events)
     ? events.map((event) => {
-        const date = event.date.split("T")[0];
-        const time = event.time;
+        // Extract date part and handle time
+        const eventDate = new Date(event.date);
+        const timeStr = event.time || "00:00";
+        const [hours, minutes] = timeStr.split(":").map(Number);
 
-        // Create a UTC-based Date object to avoid timezone shifts
-        const startDateTime = time
-          ? new Date(`${date}T${time}Z`) // Combine date and time, append 'Z' for UTC
-          : new Date(
-              Date.UTC(
-                new Date(date).getFullYear(),
-                new Date(date).getMonth(),
-                new Date(date).getDate()
-              )
-            ); // Default to UTC start of the day
+        // Create start date with time
+        const startDateTime = new Date(eventDate);
+        startDateTime.setHours(hours, minutes, 0);
 
-        const endDateTime = time
-          ? new Date(new Date(`${date}T${time}Z`).getTime() + 60 * 60 * 1000) // Add 1 hour
-          : new Date(
-              Date.UTC(
-                new Date(date).getFullYear(),
-                new Date(date).getMonth(),
-                new Date(date).getDate(),
-                23,
-                59,
-                59
-              )
-            ); // Default to UTC end of the day
+        // Create end date (1 hour after start)
+        const endDateTime = new Date(startDateTime);
+        endDateTime.setHours(endDateTime.getHours() + 1);
 
         return {
           title: event.title,
@@ -162,27 +171,68 @@ const Home = () => {
           description: event.description,
           location: event.location,
           link: event.link,
+          _id: event._id,
         };
       })
     : [];
 
   // Logout Handler
   const handleLogout = () => {
-    // Clear user data (if stored in localStorage/sessionStorage)
-    localStorage.removeItem("isAuthenticated"); // Assuming you store the token here
-    sessionStorage.removeItem("userSession"); // Optional: clear session storage
-    localStorage.removeItem("authToken"); // Assuming you store the token here
+    // Clear all auth-related data
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("admin");
+    sessionStorage.removeItem("userSession");
 
     // Redirect to login page
     navigate("/");
   };
 
-  // const events = eventList.map((event) => ({
-  //   title: event.name,
-  //   start: new Date(event.date),
-  //   end: new Date(event.date), // Single-day events
-  //   category: event.category || "default", // Assuming events have a category
-  // }));
+  const handleEventSelect = async (event) => {
+    try {
+      const authToken = localStorage.getItem("authToken");
+
+      if (!authToken) {
+        navigate("/");
+        return;
+      }
+
+      const response = await axios.get(
+        `${API_URL}/event/admin/get/${event._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        const eventDetails = response.data.data;
+        alert(
+          `Event: ${eventDetails.title}\nDate: ${new Date(
+            eventDetails.date
+          ).toLocaleDateString()}\nTime: ${
+            eventDetails.time || "N/A"
+          }\nLocation: ${
+            eventDetails.location || "No location"
+          }\nDescription: ${eventDetails.description || "No description"}`
+        );
+      } else {
+        alert(
+          `Event: ${event.title}\nDescription: ${
+            event.description || "No description"
+          }\nLocation: ${event.location || "No location"}`
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching event details:", error);
+      alert(
+        `Event: ${event.title}\nDescription: ${
+          event.description || "No description"
+        }\nLocation: ${event.location || "No location"}`
+      );
+    }
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -222,14 +272,14 @@ const Home = () => {
                   style={{
                     borderRadius: "8px",
                     background: "linear-gradient(135deg, #ffffff, #f8f9fa)",
-                    padding: "15px", // Reduced padding
-                    height: "auto", // Let the card height adjust based on content
+                    padding: "15px",
+                    height: "auto",
                   }}
                 >
                   <div className="card-body ">
                     <i
                       className={`${item.icon} text-primary mb-2`}
-                      style={{ fontSize: "1.5rem" }} // Smaller icon size
+                      style={{ fontSize: "1.5rem" }}
                     ></i>
                     <h6 className="card-title">{item.title}</h6>
                     <h4 className="text-primary fw-bold">{item.value}</h4>
@@ -243,8 +293,8 @@ const Home = () => {
                 className="card card-cal border-secondary shadow-sm"
                 style={{
                   borderRadius: "12px",
-                  background: "#f4f6f9", // Light gray background for card
-                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Soft shadow for card
+                  background: "#f4f6f9",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
                 }}
               >
                 <div className="card-body">
@@ -377,13 +427,7 @@ const Home = () => {
                             event.description || "No description"
                           }`
                         }
-                        onSelectEvent={(event) => {
-                          alert(
-                            `Event: ${event.title}\nDescription: ${
-                              event.description || "No description"
-                            }\nLocation: ${event.location || "No location"}`
-                          );
-                        }}
+                        onSelectEvent={handleEventSelect}
                         popup
                         selectable
                       />
@@ -418,27 +462,27 @@ const Home = () => {
             {[
               {
                 title: "Add Mandir",
-                icon: "bi bi-building icons", // Temple icon
+                icon: "bi bi-building icons",
               },
               {
                 title: "Add Event",
-                icon: "bi bi-calendar-event icons", // Event icon
+                icon: "bi bi-calendar-event icons",
               },
               {
                 title: "Add Book",
-                icon: "bi bi-book icons", // Book icon
+                icon: "bi bi-book icons",
               },
               {
                 title: "Add Suvichar",
-                icon: "bi bi-chat-quote icons", // Good thoughts icon
+                icon: "bi bi-chat-quote icons",
               },
               {
                 title: "Add Daily Horoscope",
-                icon: "bi bi-moon-stars icons", // History icon
+                icon: "bi bi-moon-stars icons",
               },
               {
                 title: "Add User Avatars",
-                icon: "bi bi-person-circle icons", // User avatar icon
+                icon: "bi bi-person-circle icons",
               },
             ].map((item, index) => (
               <div className="col-6 col-sm-4 col-md-3 mb-4" key={index}>
@@ -447,10 +491,10 @@ const Home = () => {
                   style={{
                     borderRadius: "8px",
                     background: "linear-gradient(135deg, #ffffff, #f8f9fa)",
-                    height: "200px", // Fixed height for uniformity
+                    height: "200px",
                     display: "flex",
                     flexDirection: "column",
-                    justifyContent: "space-between", // Ensures even spacing
+                    justifyContent: "space-between",
                     padding: "10px",
                   }}
                 >
@@ -489,37 +533,31 @@ const Home = () => {
       case "mandirList":
         return (
           <MandirList
-            onError={(message) => console.error("Mandir List Error:", message)}
+            onError={(message) => handleListError("mandirs", message)}
           />
         );
 
       case "userList":
         return (
-          <UserList
-            onError={(message) => console.error("User List Error:", message)}
-          />
+          <UserList onError={(message) => handleListError("users", message)} />
         );
 
       case "eventList":
         return (
           <EventList
-            onError={(message) => console.error("Event List Error:", message)}
+            onError={(message) => handleListError("events", message)}
           />
         );
 
       case "bookList":
         return (
-          <BookList
-            onError={(message) => console.error("Book List Error:", message)}
-          />
+          <BookList onError={(message) => handleListError("books", message)} />
         );
 
       case "offlineMandir":
         return (
           <OfflineMandir
-            onError={(message) =>
-              console.error("Offline Mandir Error:", message)
-            }
+            onError={(message) => handleListError("offlineMandirs", message)}
           />
         );
       case "userManagement":
@@ -547,6 +585,10 @@ const Home = () => {
         return <h4>Unknown Action</h4>;
     }
   };
+
+  if (!isAuthenticated) {
+    return <div className="loading">Checking authentication...</div>;
+  }
 
   return (
     <div>

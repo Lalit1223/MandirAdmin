@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "animate.css/animate.min.css"; // For animations
@@ -7,6 +7,8 @@ import "./FormStyles.css"; // Common form styling
 
 const Event = () => {
   const navigate = useNavigate();
+  const API_URL =
+    import.meta.env.VITE_API_URL || "https://man-mandir.onrender.com";
 
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
@@ -14,52 +16,115 @@ const Event = () => {
   const [time, setTime] = useState("");
   const [description, setDescription] = useState("");
   const [link, setLink] = useState("");
-  const [bannerImage, setBannerImage] = useState("");
+  const [bannerImage, setBannerImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const API_URL = import.meta.env.VITE_API_URL;
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
+    const isAuth = localStorage.getItem("isAuthenticated");
+
+    if (!authToken || isAuth !== "true") {
+      // Redirect to login if not authenticated
+      navigate("/login");
+    } else {
+      setIsAuthenticated(true);
+    }
+  }, [navigate]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setBannerImage(reader.result); // Save base64 string
-    };
-    reader.readAsDataURL(file);
+    if (file) {
+      setBannerImage(file); // Save the actual file
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    const eventData = {
-      title,
-      location,
-      date,
-      time,
-      description,
-      link,
-      bannerImage,
-    };
+    // Get auth token
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) {
+      setError("You are not authenticated. Please login first.");
+      setLoading(false);
+      navigate("/login");
+      return;
+    }
+
+    // Create FormData object
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("location", location);
+    formData.append("date", date);
+    formData.append("time", time);
+    formData.append("description", description);
+    formData.append("link", link);
+
+    // Append banner image if it exists
+    if (bannerImage) {
+      formData.append("banner_image", bannerImage);
+    }
 
     try {
-      const response = await axios.post(`${API_URL}/api/events`, eventData);
-      alert("Event added successfully!");
+      const response = await axios.post(`${API_URL}/event/add`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
 
-      // Reset form fields
-      setTitle("");
-      setLocation("");
-      setDate("");
-      setTime("");
-      setDescription("");
-      setLink("");
-      setBannerImage("");
+      if (response.data.success) {
+        alert("Event added successfully!");
 
-      // Navigate to the events page or render another component
-      setIsSubmitted(true);
+        // Reset form fields
+        setTitle("");
+        setLocation("");
+        setDate("");
+        setTime("");
+        setDescription("");
+        setLink("");
+        setBannerImage(null);
+        setPreviewImage("");
+
+        // Navigate to the events page or render another component
+        setIsSubmitted(true);
+      } else {
+        setError(response.data.message || "Failed to add the event.");
+      }
     } catch (error) {
       console.error("Error adding event:", error);
-      alert("Failed to add the event. Please try again.");
+      if (error.response?.status === 401) {
+        setError("Authentication failed. Please login again.");
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("isAuthenticated");
+        navigate("/login");
+      } else {
+        setError(
+          error.response?.data?.message ||
+            "Failed to add the event. Please try again."
+        );
+      }
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (!isAuthenticated) {
+    return <div className="loading">Checking authentication...</div>;
+  }
 
   if (isSubmitted) {
     return <EventList />;
@@ -68,6 +133,8 @@ const Event = () => {
   return (
     <div className="form-container animate__animated animate__fadeIn">
       <h2 className="form-title">Create New Event</h2>
+      {error && <div className="form-error">{error}</div>}
+
       <form onSubmit={handleSubmit} className="form">
         <div className="form-group">
           <label htmlFor="bannerImage" className="form-label">
@@ -81,6 +148,19 @@ const Event = () => {
             onChange={handleImageChange}
             required
           />
+          {previewImage && (
+            <div className="image-preview mt-2">
+              <img
+                src={previewImage}
+                alt="Banner preview"
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "200px",
+                  objectFit: "contain",
+                }}
+              />
+            </div>
+          )}
         </div>
 
         <div className="form-group">
@@ -151,6 +231,7 @@ const Event = () => {
             placeholder="Enter event description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            rows="4"
             required
           />
         </div>
@@ -163,15 +244,26 @@ const Event = () => {
             type="url"
             className="form-control"
             id="link"
-            placeholder="Enter event link"
+            placeholder="Enter event link (e.g., registration page, details page)"
             value={link}
             onChange={(e) => setLink(e.target.value)}
             required
           />
         </div>
 
-        <button type="submit" className="btn-submit">
-          Add Event
+        <button type="submit" className="btn-submit" disabled={loading}>
+          {loading ? (
+            <span>
+              <span
+                className="spinner-border spinner-border-sm me-2"
+                role="status"
+                aria-hidden="true"
+              ></span>
+              Adding Event...
+            </span>
+          ) : (
+            "Add Event"
+          )}
         </button>
       </form>
     </div>

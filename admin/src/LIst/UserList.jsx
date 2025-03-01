@@ -1,73 +1,135 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import "../Home.css";
 
 const UserList = () => {
+  const navigate = useNavigate();
+  const API_URL =
+    import.meta.env.VITE_API_URL || "https://man-mandir.onrender.com";
+
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const itemsPerPage = 10;
-  const API_URL = import.meta.env.VITE_API_URL;
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
+    const isAuth = localStorage.getItem("isAuthenticated");
+
+    if (!authToken || isAuth !== "true") {
+      // Redirect to login if not authenticated
+      navigate("/login");
+    } else {
+      fetchUsers();
+    }
+  }, [navigate]);
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/api/users`);
-      console.log("User response:", response.data);
+      const authToken = localStorage.getItem("authToken");
 
-      if (!response.data.error) {
-        const userData = response.data.users || response.data;
-        setUsers(Array.isArray(userData) ? userData : []);
+      if (!authToken) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}/admin/users`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      if (response.data.success) {
+        // Add index property to each user for numbering
+        const userData = response.data.data.map((user, index) => ({
+          ...user,
+          index: index + 1,
+        }));
+        setUsers(userData || []);
       } else {
         console.error("Error from server:", response.data.message);
         setUsers([]);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
+      if (error.response?.status === 401) {
+        // Unauthorized - clear token and redirect to login
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("isAuthenticated");
+        navigate("/login");
+      }
       setUsers([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
   const handleSort = () => {
     const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
     const sortedList = [...users].sort((a, b) =>
-      newSortOrder === "asc" ? a.id - b.id : b.id - a.id
+      newSortOrder === "asc" ? a.index - b.index : b.index - a.index
     );
     setUsers(sortedList);
     setSortOrder(newSortOrder);
   };
 
   const toggleStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === 1 ? 0 : 1;
-
     try {
-      await axios.patch(`${API_URL}/api/users/${id}/status`, {
-        status: newStatus,
-      });
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === id ? { ...user, status: newStatus } : user
-        )
+      const authToken = localStorage.getItem("authToken");
+
+      if (!authToken) {
+        navigate("/login");
+        return;
+      }
+
+      const newStatus = !currentStatus;
+
+      const response = await axios.patch(
+        `${API_URL}/admin/user-status/${id}`,
+        { status: newStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
       );
-      alert("Status updated successfully.");
+
+      if (response.data.success) {
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user._id === id ? { ...user, status: newStatus } : user
+          )
+        );
+        alert("Status updated successfully.");
+      } else {
+        alert(response.data.message || "Failed to update status");
+      }
     } catch (error) {
       console.error("Error updating status:", error);
-      alert("Failed to update status.");
+      if (error.response?.status === 401) {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("isAuthenticated");
+        navigate("/login");
+      }
+      alert(
+        "Failed to update status. " + (error.response?.data?.message || "")
+      );
     }
   };
 
   const filteredUsers = users.filter(
     (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      (user.full_name &&
+        user.full_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (user.email &&
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (user.mobile &&
+        user.mobile.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
@@ -135,37 +197,39 @@ const UserList = () => {
                   </th>
                   <th>Name</th>
                   <th>Email</th>
-                  <th>Number</th>
+                  <th>Mobile</th>
+                  <th>Country</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {currentUsers.map((user) => (
-                  <tr key={user.id}>
-                    <td className="fw-bold">{user.id}</td>
-                    <td>{user.name}</td>
-                    <td>{user.email}</td>
-                    <td>{user.mobile_number || "N/A"}</td>
+                  <tr key={user._id}>
+                    <td className="fw-bold">{user.index}</td>
+                    <td>{user.full_name || "N/A"}</td>
+                    <td>{user.email || "N/A"}</td>
+                    <td>{user.mobile || "N/A"}</td>
+                    <td>{user.country || "N/A"}</td>
                     <td>
                       <span
                         className={`badge ${
-                          user.status === 1 ? "bg-success" : "bg-secondary"
+                          user.status ? "bg-success" : "bg-secondary"
                         }`}
                         style={{
                           fontSize: "0.9rem",
                           borderRadius: "10px",
                         }}
                       >
-                        {user.status === 1 ? "Active" : "Inactive"}
+                        {user.status ? "Active" : "Inactive"}
                       </span>
                     </td>
                     <td>
                       <label className="switch">
                         <input
                           type="checkbox"
-                          checked={user.status === 1}
-                          onChange={() => toggleStatus(user.id, user.status)}
+                          checked={user.status}
+                          onChange={() => toggleStatus(user._id, user.status)}
                         />
                         <span className="slider round"></span>
                       </label>
@@ -188,13 +252,13 @@ const UserList = () => {
                   Previous
                 </button>
                 <span>
-                  Page {currentPage} of {totalPages}
+                  Page {currentPage} of {totalPages || 1}
                 </span>
                 <button
                   className="btn btn-sm"
                   style={{ backgroundColor: "#ff5722", color: "#ffffff" }}
                   onClick={() => changePage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
+                  disabled={currentPage === totalPages || totalPages === 0}
                 >
                   Next
                 </button>

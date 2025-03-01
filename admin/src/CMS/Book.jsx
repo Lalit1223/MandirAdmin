@@ -1,73 +1,133 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import BookList from "../LIst/BookList";
 import "./FormStyles.css";
 
 const Book = () => {
+  const navigate = useNavigate();
+  const API_URL =
+    import.meta.env.VITE_API_URL || "https://man-mandir.onrender.com";
+
   const [name, setName] = useState("");
-  const [image, setImage] = useState(null);
+  const [coverImage, setCoverImage] = useState(null);
   const [pdfFile, setPdfFile] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const API_URL = import.meta.env.VITE_API_URL;
+  const [error, setError] = useState("");
+  const [previewImage, setPreviewImage] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
+  // Check authentication on component mount
+  useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
+    const isAuth = localStorage.getItem("isAuthenticated");
+
+    if (!authToken || isAuth !== "true") {
+      // Redirect to login if not authenticated
+      navigate("/login");
+    } else {
+      setIsAuthenticated(true);
+    }
+  }, [navigate]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setCoverImage(file);
+
+      // Create preview
       const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
+      reader.onloadend = () => {
+        setPreviewImage(reader.result);
+      };
       reader.readAsDataURL(file);
-    });
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPdfFile(file);
+    }
   };
 
   const resetForm = () => {
     setName("");
-    setImage(null);
+    setCoverImage(null);
     setPdfFile(null);
+    setPreviewImage("");
     setIsSubmitted(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    if (!name || !image || !pdfFile) {
-      alert("All fields are required");
+    if (!name || !coverImage || !pdfFile) {
+      setError("All fields are required");
+      setLoading(false);
+      return;
+    }
+
+    // Get auth token
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) {
+      setError("You are not authenticated. Please login first.");
+      setLoading(false);
+      navigate("/login");
       return;
     }
 
     try {
-      setLoading(true);
-      const imageBase64 = await fileToBase64(image);
-      const pdfBase64 = await fileToBase64(pdfFile);
+      // Create FormData object
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("cover_image", coverImage);
+      formData.append("file", pdfFile);
 
-      const formData = {
-        name,
-        image: imageBase64,
-        pdfFile: pdfBase64,
-      };
+      const response = await axios.post(`${API_URL}/book/add`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
 
-      const response = await axios.post(`${API_URL}/api/books`, formData);
-
-      if (response.data.error) {
-        throw new Error(response.data.message);
+      if (response.data.success) {
+        alert("Book added successfully");
+        resetForm();
+      } else {
+        throw new Error(response.data.message || "Failed to add book");
       }
-
-      alert("Book added successfully");
-      resetForm();
     } catch (error) {
-      const message = error.response?.data?.message || error.message;
-      alert(`Error: ${message}`);
-      console.error("Full error:", error);
+      console.error("Error adding book:", error);
+      if (error.response?.status === 401) {
+        setError("Authentication failed. Please login again.");
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("isAuthenticated");
+        navigate("/login");
+      } else {
+        setError(
+          error.response?.data?.message || error.message || "Failed to add book"
+        );
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  if (!isAuthenticated) {
+    return <div className="loading">Checking authentication...</div>;
+  }
 
   if (isSubmitted) return <BookList />;
 
   return (
     <div className="form-container animate__animated animate__fadeIn">
       <h2 className="form-title">Add New Book</h2>
+      {error && <div className="form-error">{error}</div>}
+
       <form onSubmit={handleSubmit} className="form">
         <div className="form-group">
           <label htmlFor="name" className="form-label">
@@ -86,18 +146,31 @@ const Book = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="image" className="form-label">
+          <label htmlFor="coverImage" className="form-label">
             Cover Image <span className="required">*</span>
           </label>
           <input
             type="file"
             accept="image/*"
             className="form-control"
-            id="image"
-            onChange={(e) => setImage(e.target.files[0])}
+            id="coverImage"
+            onChange={handleImageChange}
             required
             disabled={loading}
           />
+          {previewImage && (
+            <div className="image-preview mt-2">
+              <img
+                src={previewImage}
+                alt="Cover preview"
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "200px",
+                  objectFit: "contain",
+                }}
+              />
+            </div>
+          )}
         </div>
 
         <div className="form-group">
@@ -109,14 +182,31 @@ const Book = () => {
             accept="application/pdf"
             className="form-control"
             id="pdfFile"
-            onChange={(e) => setPdfFile(e.target.files[0])}
+            onChange={handleFileChange}
             required
             disabled={loading}
           />
+          {pdfFile && (
+            <div className="file-info mt-2">
+              <i className="bi bi-file-earmark-pdf text-danger me-2"></i>
+              <span>{pdfFile.name}</span> ({Math.round(pdfFile.size / 1024)} KB)
+            </div>
+          )}
         </div>
 
         <button type="submit" className="btn-submit" disabled={loading}>
-          {loading ? "Adding Book..." : "Add Book"}
+          {loading ? (
+            <span>
+              <span
+                className="spinner-border spinner-border-sm me-2"
+                role="status"
+                aria-hidden="true"
+              ></span>
+              Adding Book...
+            </span>
+          ) : (
+            "Add Book"
+          )}
         </button>
       </form>
     </div>

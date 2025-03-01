@@ -1,40 +1,78 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const OfflineMandir = () => {
+  const navigate = useNavigate();
+  const API_URL =
+    import.meta.env.VITE_API_URL || "https://man-mandir.onrender.com";
+
   const [mandirList, setMandirList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const itemsPerPage = 10;
-  const API_URL = import.meta.env.VITE_API_URL;
+
+  // Check authentication and fetch mandirs on component mount
+  useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
+    const isAuth = localStorage.getItem("isAuthenticated");
+
+    if (!authToken || isAuth !== "true") {
+      // Redirect to login if not authenticated
+      navigate("/login");
+    } else {
+      fetchOfflineMandirs();
+    }
+  }, [navigate]);
 
   const fetchOfflineMandirs = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/api/mandir`);
-      console.log("Mandir response:", response.data);
+      const authToken = localStorage.getItem("authToken");
 
-      if (!response.data.error) {
-        const mandirs = response.data.mandirs || response.data;
-        const offlineMandirs = mandirs.filter((mandir) => mandir.status === 0);
-        setMandirList(Array.isArray(offlineMandirs) ? offlineMandirs : []);
+      if (!authToken) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}/mandir/admin/get`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      if (response.data.success) {
+        const mandirs = response.data.data || [];
+        // Filter for offline mandirs (where status is false)
+        const offlineMandirs = mandirs.filter((mandir) => !mandir.status);
+
+        // Add index property to each mandir for numbering
+        const indexedMandirs = offlineMandirs.map((mandir, index) => ({
+          ...mandir,
+          index: index + 1,
+        }));
+
+        setMandirList(indexedMandirs);
       } else {
         console.error("Error from server:", response.data.message);
         setMandirList([]);
       }
     } catch (error) {
       console.error("Error fetching offline mandirs:", error);
+      if (error.response?.status === 401) {
+        // Unauthorized - clear token and redirect to login
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("isAuthenticated");
+        navigate("/login");
+      }
       setMandirList([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchOfflineMandirs();
-  }, []);
   // Search functionality
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -44,7 +82,7 @@ const OfflineMandir = () => {
   const handleSort = () => {
     const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
     const sortedList = [...mandirList].sort((a, b) =>
-      newSortOrder === "asc" ? a.id - b.id : b.id - a.id
+      newSortOrder === "asc" ? a.index - b.index : b.index - a.index
     );
     setMandirList(sortedList);
     setSortOrder(newSortOrder);
@@ -55,8 +93,10 @@ const OfflineMandir = () => {
     (mandir) =>
       (mandir.title &&
         mandir.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (mandir.map_link &&
-        mandir.map_link.toLowerCase().includes(searchTerm.toLowerCase()))
+      (mandir.city &&
+        mandir.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (mandir.country &&
+        mandir.country.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // Pagination calculations
@@ -119,16 +159,20 @@ const OfflineMandir = () => {
                     # {sortOrder === "asc" ? "↑" : "↓"}
                   </th>
                   <th>Name</th>
+                  <th>Nickname</th>
                   <th>Location</th>
                   <th>Directions</th>
                 </tr>
               </thead>
               <tbody>
                 {currentItems.map((mandir) => (
-                  <tr key={mandir.id}>
-                    <td className="fw-bold">{mandir.id}</td>
+                  <tr key={mandir._id}>
+                    <td className="fw-bold">{mandir.index}</td>
                     <td>{mandir.title}</td>
-                    <td>{mandir.city || "No location"}</td>
+                    <td>{mandir.nick_name || "-"}</td>
+                    <td>
+                      {mandir.city}, {mandir.country}
+                    </td>
                     <td>
                       {mandir.map_link ? (
                         <a
@@ -150,7 +194,7 @@ const OfflineMandir = () => {
             </table>
           </div>
 
-          {mandirList.length > 0 && (
+          {filteredMandirList.length > 0 && (
             <>
               <div className="d-flex justify-content-between align-items-center mt-3">
                 <button
@@ -164,7 +208,7 @@ const OfflineMandir = () => {
                   Previous
                 </button>
                 <span>
-                  Page {currentPage} of {totalPages}
+                  Page {currentPage} of {totalPages || 1}
                 </span>
                 <button
                   className="btn btn-sm"
@@ -172,7 +216,7 @@ const OfflineMandir = () => {
                   onClick={() =>
                     setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                   }
-                  disabled={currentPage === totalPages}
+                  disabled={currentPage === totalPages || totalPages === 0}
                 >
                   Next
                 </button>

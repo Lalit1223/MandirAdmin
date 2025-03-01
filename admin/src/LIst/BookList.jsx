@@ -1,45 +1,91 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const BookList = () => {
+  const navigate = useNavigate();
+  const API_URL =
+    import.meta.env.VITE_API_URL || "https://man-mandir.onrender.com";
+
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const itemsPerPage = 10;
-  const API_URL = import.meta.env.VITE_API_URL;
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
+    const isAuth = localStorage.getItem("isAuthenticated");
+
+    if (!authToken || isAuth !== "true") {
+      // Redirect to login if not authenticated
+      navigate("/login");
+    } else {
+      fetchBooks();
+    }
+  }, [navigate]);
 
   const fetchBooks = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/api/books`);
-      console.log("Books response:", response.data);
+      const authToken = localStorage.getItem("authToken");
 
-      if (!response.data.error) {
-        const bookData = response.data.books || response.data;
-        setBooks(Array.isArray(bookData) ? bookData : []);
+      if (!authToken) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}/book/admin/get`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      if (response.data.success) {
+        // Add index property to each book for numbering
+        const bookData = response.data.data.map((book, index) => ({
+          ...book,
+          index: index + 1,
+        }));
+        setBooks(bookData || []);
       } else {
         console.error("Error from server:", response.data.message);
         setBooks([]);
       }
     } catch (error) {
       console.error("Error fetching books:", error);
+      if (error.response?.status === 401) {
+        // Unauthorized - clear token and redirect to login
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("isAuthenticated");
+        navigate("/login");
+      }
       setBooks([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchBooks();
-  }, []);
-
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this book?")) {
       try {
-        const response = await axios.delete(`${API_URL}/api/books/${id}`);
-        if (!response.data.error) {
+        const authToken = localStorage.getItem("authToken");
+
+        if (!authToken) {
+          navigate("/login");
+          return;
+        }
+
+        const response = await axios.delete(`${API_URL}/book/delete/${id}`, {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+
+        if (response.data.success) {
           await fetchBooks(); // Refresh the list
           alert("Book deleted successfully!");
         } else {
@@ -47,16 +93,21 @@ const BookList = () => {
         }
       } catch (error) {
         console.error("Error deleting book:", error);
+        if (error.response?.status === 401) {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("isAuthenticated");
+          navigate("/login");
+        }
         alert("Failed to delete the book. Please try again.");
       }
     }
   };
 
-  // Sort books by ID
+  // Sort books by index
   const handleSort = () => {
     const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
     const sortedList = [...books].sort((a, b) =>
-      newSortOrder === "asc" ? a.id - b.id : b.id - a.id
+      newSortOrder === "asc" ? a.index - b.index : b.index - a.index
     );
     setBooks(sortedList);
     setSortOrder(newSortOrder);
@@ -64,7 +115,7 @@ const BookList = () => {
 
   // Filter books based on search term
   const filteredBooks = books.filter((book) =>
-    book.name.toLowerCase().includes(searchTerm.toLowerCase())
+    book.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Calculate pagination
@@ -79,17 +130,26 @@ const BookList = () => {
     <div className="container">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h3 className="text-primary">Book List</h3>
-        <div className="input-group" style={{ maxWidth: "300px" }}>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Search book..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <span className="input-group-text">
-            <i className="bi bi-search"></i>
-          </span>
+        <div className="d-flex gap-2">
+          <Link
+            to="/add-book"
+            className="btn btn-sm me-2"
+            style={{ backgroundColor: "#ff5722", color: "#ffffff" }}
+          >
+            <i className="bi bi-plus-circle"></i> Add Book
+          </Link>
+          <div className="input-group" style={{ maxWidth: "300px" }}>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search book..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <span className="input-group-text">
+              <i className="bi bi-search"></i>
+            </span>
+          </div>
         </div>
       </div>
 
@@ -120,7 +180,7 @@ const BookList = () => {
               >
                 <tr>
                   <th onClick={handleSort} style={{ cursor: "pointer" }}>
-                    ID{" "}
+                    #{" "}
                     <i
                       className={`bi bi-arrow-${
                         sortOrder === "asc" ? "up" : "down"
@@ -135,13 +195,13 @@ const BookList = () => {
               </thead>
               <tbody>
                 {currentBooks.map((book) => (
-                  <tr key={book.id}>
-                    <td className="fw-bold">{book.id}</td>
+                  <tr key={book._id}>
+                    <td className="fw-bold">{book.index}</td>
                     <td>{book.name}</td>
                     <td>
-                      {book.coverImagePath ? (
+                      {book.cover_image ? (
                         <img
-                          src={`${API_URL}${book.coverImagePath}`}
+                          src={`${API_URL}${book.cover_image}`}
                           alt={book.name}
                           style={{
                             width: "50px",
@@ -155,9 +215,9 @@ const BookList = () => {
                       )}
                     </td>
                     <td>
-                      {book.pdfFilePath ? (
+                      {book.file ? (
                         <a
-                          href={`${API_URL}${book.pdfFilePath}`}
+                          href={`${API_URL}${book.file}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="btn btn-sm"
@@ -184,7 +244,7 @@ const BookList = () => {
                     <td>
                       <button
                         className="btn btn-danger btn-sm"
-                        onClick={() => handleDelete(book.id)}
+                        onClick={() => handleDelete(book._id)}
                       >
                         <i className="bi bi-trash me-1"></i>
                         Delete
@@ -210,7 +270,7 @@ const BookList = () => {
                   Previous
                 </button>
                 <span>
-                  Page {currentPage} of {totalPages}
+                  Page {currentPage} of {totalPages || 1}
                 </span>
                 <button
                   className="btn btn-sm"
@@ -218,7 +278,7 @@ const BookList = () => {
                   onClick={() =>
                     setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                   }
-                  disabled={currentPage === totalPages}
+                  disabled={currentPage === totalPages || totalPages === 0}
                 >
                   Next
                 </button>

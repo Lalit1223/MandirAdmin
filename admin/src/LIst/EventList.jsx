@@ -2,8 +2,13 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Modal from "../Modal";
 import Event from "../CMS/Event";
+import { useNavigate } from "react-router-dom";
 
 const EventList = () => {
+  const navigate = useNavigate();
+  const API_URL =
+    import.meta.env.VITE_API_URL || "https://man-mandir.onrender.com";
+
   const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -12,38 +17,78 @@ const EventList = () => {
   const itemsPerPage = 10;
   const [showModal, setShowModal] = useState(false);
   const [currentModal, setCurrentModal] = useState("");
-  const API_URL = import.meta.env.VITE_API_URL;
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
+    const isAuth = localStorage.getItem("isAuthenticated");
+
+    if (!authToken || isAuth !== "true") {
+      // Redirect to login if not authenticated
+      navigate("/login");
+    } else {
+      fetchEvents();
+    }
+  }, [navigate]);
 
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/api/events`);
-      console.log("Events response:", response.data);
+      const authToken = localStorage.getItem("authToken");
 
-      if (!response.data.error) {
-        const eventData = response.data.events || response.data;
-        setEvents(Array.isArray(eventData) ? eventData : []);
+      if (!authToken) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}/event/admin/get`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      if (response.data.success) {
+        // Add index property to each event for numbering
+        const eventData = response.data.data.map((event, index) => ({
+          ...event,
+          index: index + 1,
+        }));
+        setEvents(eventData || []);
       } else {
         console.error("Error from server:", response.data.message);
         setEvents([]);
       }
     } catch (error) {
       console.error("Error fetching events:", error);
+      if (error.response?.status === 401) {
+        // Unauthorized - clear token and redirect to login
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("isAuthenticated");
+        navigate("/login");
+      }
       setEvents([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this Event?")) {
       try {
-        const response = await axios.delete(`${API_URL}/api/events/${id}`);
-        if (!response.data.error) {
+        const authToken = localStorage.getItem("authToken");
+
+        if (!authToken) {
+          navigate("/login");
+          return;
+        }
+
+        const response = await axios.delete(`${API_URL}/event/delete/${id}`, {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+
+        if (response.data.success) {
           await fetchEvents(); // Refresh the list
           alert("Event deleted successfully!");
         } else {
@@ -51,36 +96,39 @@ const EventList = () => {
         }
       } catch (error) {
         console.error("Error deleting event:", error);
+        if (error.response?.status === 401) {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("isAuthenticated");
+          navigate("/login");
+        }
         alert("Failed to delete the event. Please try again.");
       }
     }
   };
 
-  // Sort events by ID
+  // Sort events by index
   const handleSort = () => {
     const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
     const sortedList = [...events].sort((a, b) =>
-      newSortOrder === "asc" ? a.id - b.id : b.id - a.id
+      newSortOrder === "asc" ? a.index - b.index : b.index - a.index
     );
     setEvents(sortedList);
-    setSortOrder(newSortOrder); // Update the sort order state
+    setSortOrder(newSortOrder);
   };
 
-  const formatDate = (date) => {
-    const eventDate = new Date(date);
-    const day = eventDate.getDate(); // Get the day of the month
-    const month = eventDate.getMonth() + 1; // Get the month (0-based index, so we add 1)
-    const year = eventDate.getFullYear(); // Get the full year
-
-    // Return the formatted string as 'DD-MM-YYYY'
+  const formatDate = (dateString) => {
+    const eventDate = new Date(dateString);
+    const day = String(eventDate.getDate()).padStart(2, "0");
+    const month = String(eventDate.getMonth() + 1).padStart(2, "0");
+    const year = eventDate.getFullYear();
     return `${day}-${month}-${year}`;
   };
 
   // Filter events based on search term
   const filteredEvents = events.filter(
     (event) =>
-      event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.location.toLowerCase().includes(searchTerm.toLowerCase())
+      event.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.location?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Calculate pagination
@@ -99,12 +147,13 @@ const EventList = () => {
   };
 
   const handleAddEvent = () => {
-    setCurrentModal("Add Mandir");
-    setShowModal(true); // Open the modal
+    setCurrentModal("Add Event");
+    setShowModal(true);
   };
 
   const handleCloseModal = () => {
-    setShowModal(false); // Close the modal
+    setShowModal(false);
+    fetchEvents(); // Refresh the list after closing modal
   };
 
   return (
@@ -165,32 +214,27 @@ const EventList = () => {
               >
                 <tr>
                   <th onClick={handleSort} style={{ cursor: "pointer" }}>
-                    ID {sortOrder === "asc" ? "↑" : "↓"}
+                    # {sortOrder === "asc" ? "↑" : "↓"}
                   </th>
                   <th>Event Name</th>
                   <th>Date</th>
+                  <th>Time</th>
                   <th>Location</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {currentEvents.map((event) => (
-                  <tr key={event.id}>
-                    <td className="fw-bold">{event.id}</td>
+                  <tr key={event._id}>
+                    <td className="fw-bold">{event.index}</td>
                     <td>{event.title}</td>
                     <td>{formatDate(event.date)}</td>
+                    <td>{event.time || "N/A"}</td>
                     <td>{event.location || "No location"}</td>
                     <td>
-                      {/* should be added if required edit functionality */}
-                      {/* <button
-                        className="btn btn-warning btn-sm me-2"
-                        onClick={() => handleEditEvent(event.id)}
-                      >
-                        <i className="bi bi-pencil-square"></i> Edit
-                      </button> */}
                       <button
                         className="btn btn-danger btn-sm"
-                        onClick={() => handleDelete(event.id)}
+                        onClick={() => handleDelete(event._id)}
                       >
                         <i className="bi bi-trash"></i> Delete
                       </button>
@@ -213,13 +257,13 @@ const EventList = () => {
                   Previous
                 </button>
                 <span>
-                  Page {currentPage} of {totalPages}
+                  Page {currentPage} of {totalPages || 1}
                 </span>
                 <button
                   className="btn btn-sm"
                   style={{ backgroundColor: "#ff5722", color: "#ffffff" }}
                   onClick={() => changePage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
+                  disabled={currentPage === totalPages || totalPages === 0}
                 >
                   Next
                 </button>
@@ -239,7 +283,7 @@ const EventList = () => {
         showModal={showModal}
         handleCloseModal={handleCloseModal}
         currentModal={currentModal}
-        renderModalContent={() => <Event onSubmitSuccess={fetchEvents} />}
+        renderModalContent={() => <Event />}
       />
     </div>
   );

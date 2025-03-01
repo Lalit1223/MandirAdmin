@@ -7,14 +7,16 @@ const Navbar = () => {
   const navigate = useNavigate(); // Hook for navigation
 
   const handleLogout = () => {
-    // Clear user data (if stored in localStorage/sessionStorage)
-    localStorage.removeItem("isAuthenticated"); // Assuming you store the token here
-    sessionStorage.removeItem("userSession"); // Optional: clear session storage
-    localStorage.removeItem("authToken"); // Assuming you store the token here
+    // Clear all auth-related data
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("admin");
+    sessionStorage.removeItem("userSession");
 
     // Redirect to login page
     navigate("/");
   };
+
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <div className="container-fluid">
