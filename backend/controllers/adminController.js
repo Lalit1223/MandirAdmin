@@ -39,7 +39,7 @@ exports.login = async (req, res) => {
   }
 };
 
-// (async () => {
-//   const hashedPassword = await bcrypt.hash("password123", 10);
-//   console.log(hashedPassword);
-// })();
+(async () => {
+  const hashedPassword = await bcrypt.hash("password123", 10);
+  console.log(hashedPassword);
+})();
