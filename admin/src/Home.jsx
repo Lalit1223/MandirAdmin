@@ -8,6 +8,7 @@ import MandirList from "./LIst/MandirList";
 import BookList from "./LIst/BookList";
 import UserList from "./LIst/UserList";
 import EventList from "./LIst/EventList";
+import BannerList from "./LIst/BannerList";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -18,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Modal from "./Modal";
 import Avatar from "./CMS/Avatar";
+import Banner from "./CMS/Banner";
 const localizer = momentLocalizer(moment);
 
 const Home = () => {
@@ -484,6 +486,10 @@ const Home = () => {
                 title: "Add User Avatars",
                 icon: "bi bi-person-circle icons",
               },
+              {
+                title: "Add Banners",
+                icon: "bi bi-card-image icons", // Image-related icon that better represents banners
+              },
             ].map((item, index) => (
               <div className="col-6 col-sm-4 col-md-3 mb-4" key={index}>
                 <div
@@ -554,6 +560,13 @@ const Home = () => {
           <BookList onError={(message) => handleListError("books", message)} />
         );
 
+      case "bannerList":
+        return (
+          <BannerList
+            onError={(message) => handleListError("books", message)}
+          />
+        );
+
       case "offlineMandir":
         return (
           <OfflineMandir
@@ -581,6 +594,8 @@ const Home = () => {
         return <Horoscope />;
       case "Add User Avatars":
         return <Avatar />;
+      case "Add Banners":
+        return <Banner />;
       default:
         return <h4>Unknown Action</h4>;
     }
@@ -685,6 +700,21 @@ const Home = () => {
                     }`}
                   ></i>{" "}
                   Book List
+                </button>
+              </li>
+              <li className="nav-item mb-3">
+                <button
+                  className={`btn btn-link text-start  w-100 ${
+                    activeTab === "bannerList" ? "fw-bold  rounded" : ""
+                  }`}
+                  onClick={() => handleTabChange("bannerList")}
+                >
+                  <i
+                    className={`bi icon bi-image me-2 ${
+                      activeTab === "bannerLIst" ? "text-white" : "icon"
+                    }`}
+                  ></i>{" "}
+                  Banner List
                 </button>
               </li>
               <li className="nav-item mb-3">
